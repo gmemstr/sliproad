@@ -52,20 +52,20 @@ func Init() *mux.Router {
 	r.Handle("/files/", Handle(
 		files.Listing("hot"),
 	)).Methods("GET")
-	r.Handle(`/files/{file:[a-zA-Z0-9=\-\/.]+}`, Handle(
+	r.Handle(`/files/{file:[a-zA-Z0-9=\-\/\s.,&]+}`, Handle(
 		files.Listing("hot"),
 	)).Methods("GET")
-	r.Handle(`/file/{file:[a-zA-Z0-9=\-\/.]+}`, Handle(
+	r.Handle(`/file/{file:[a-zA-Z0-9=\-\/\s.,&]+}`, Handle(
 		files.ViewFile("hot"),
 	)).Methods("GET")
 
 	r.Handle("/archive/", Handle(
 		files.Listing("cold"),
 	)).Methods("GET")
-	r.Handle(`/archive/{file:[a-zA-Z0-9=\-\/.]+}`, Handle(
+	r.Handle(`/archive/{file:[a-zA-Z0-9=\-\/\s.,&]+}`, Handle(
 		files.Listing("cold"),
 	)).Methods("GET")
-	r.Handle(`/archived/{file:[a-zA-Z0-9=\-\/.]+}`, Handle(
+	r.Handle(`/archived/{file:[a-zA-Z0-9=\-\/\s.,&]+}`, Handle(
 		files.ViewFile("cold"),
 	)).Methods("GET")
 
