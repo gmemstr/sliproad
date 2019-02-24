@@ -1,0 +1,32 @@
+body {
+    font-family: Open Sans, Arial, sans-serif;
+    color: #454545;
+    font-size: 16px;
+    margin: 2em auto;
+    max-width: 800px;
+    padding: 1em;
+    line-height: 1.4;
+    text-align: justify;
+    background-color: #fefefe;
+}
+
+.directory, .file {
+    margin: 0;
+    border: 1px solid #454545;
+    margin-top: -1px;
+    padding: 0.5em;
+    -webkit-transition: background-color 0.5s linear;
+    -moz-transition: background-color 0.5s linear;
+    -ms-transition: background-color 0.5s linear;
+    -o-transition: background-color 0.5s linear;
+    transition: background-color 0.5s linear;
+}
+
+.directory:hover, .file:hover {
+    background-color: lightgray;
+    -webkit-transition: background-color 0.5s linear;
+    -moz-transition: background-color 0.5s linear;
+    -ms-transition: background-color 0.5s linear;
+    -o-transition: background-color 0.5s linear;
+    transition: background-color 0.5s linear;
+}

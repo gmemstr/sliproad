@@ -2,7 +2,6 @@ package files
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gmemstr/nas/common"
 	"github.com/gorilla/mux"
 	"html/template"
@@ -75,7 +74,7 @@ func Listing(tier string) common.Handler {
 			Prefix: prefix,
 			SinglePrefix: singleprefix,
 		}
-		fmt.Println(prefix)
+
 		t, err := template.ParseFiles("assets/web/listing.html")
 		if err != nil {
 			panic(err)
@@ -93,7 +92,6 @@ func ViewFile(tier string) common.Handler {
 	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
 		vars := mux.Vars(r)
 		id := vars["file"]
-		fmt.Println(id)
 
 		d, err := ioutil.ReadFile("assets/config/config.json")
 		if err != nil {

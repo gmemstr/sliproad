@@ -10,16 +10,16 @@
 <body>
 <main>
     <div>
-        <h1>{{$path}}</h1>
+        <h1>{{$prefix}}/{{$path}}</h1>
     </div>
     <div class="content">
-        <a href="/{{$prefix}}{{$prev}}">..</a> <br>
+        <p class="directory"><a href="/{{$prefix}}/{{$prev}}">..</a></p>
         {{range $file := .Files}}
             {{ if $file.IsDir }}
-                <a href="/{{$prefix}}/{{$path}}/{{$file.Name}}">{{$file.Name}}</a> <br>
+                <p class="directory"><a href="/{{$prefix}}/{{$path}}/{{$file.Name}}">{{$file.Name}}/</a></p>
             {{ end }}
             {{ if not $file.IsDir }}
-                <a href="/{{$singleprefix}}/{{$path}}/{{$file.Name}}">{{$file.Name}}</a> <br>
+                <p class="file"><a href="/{{$singleprefix}}/{{$path}}/{{$file.Name}}">{{$file.Name}}</a></p>
             {{end}}
         {{end}}
     </div>
