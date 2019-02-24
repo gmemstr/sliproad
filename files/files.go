@@ -144,7 +144,7 @@ func UploadFile() common.Handler {
 		}
 		defer file.Close()
 
-		f, err := os.OpenFile(storage+path+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+		f, err := os.OpenFile(storage+"/"+path+"/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
 
 		if err != nil {
 			panic(err)
