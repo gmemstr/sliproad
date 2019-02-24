@@ -1,0 +1,28 @@
+{{ $path := .Path }}
+{{ $prev := .Previous }}
+{{ $prefix := .Prefix }}
+{{ $singleprefix := .SinglePrefix }}
+<html>
+<head>
+    <title>{{ $path }} | PiNas</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+<main>
+    <div>
+        <h1>{{$path}}</h1>
+    </div>
+    <div class="content">
+        <a href="/{{$prefix}}{{$prev}}">..</a> <br>
+        {{range $file := .Files}}
+            {{ if $file.IsDir }}
+                <a href="/{{$prefix}}/{{$path}}/{{$file.Name}}">{{$file.Name}}</a> <br>
+            {{ end }}
+            {{ if not $file.IsDir }}
+                <a href="/{{$singleprefix}}/{{$path}}/{{$file.Name}}">{{$file.Name}}</a> <br>
+            {{end}}
+        {{end}}
+    </div>
+</main>
+</body>
+</html>
