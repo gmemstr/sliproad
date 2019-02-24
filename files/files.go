@@ -2,9 +2,11 @@ package files
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gmemstr/nas/common"
 	"github.com/gorilla/mux"
 	"html/template"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -68,10 +70,10 @@ func Listing(tier string) common.Handler {
 		previousPath := strings.Join(previous, "/")
 
 		directory := Directory{
-			Path: path,
-			Files: fileDir,
-			Previous: previousPath,
-			Prefix: prefix,
+			Path:         path,
+			Files:        fileDir,
+			Previous:     previousPath,
+			Prefix:       prefix,
 			SinglePrefix: singleprefix,
 		}
 
@@ -114,6 +116,41 @@ func ViewFile(tier string) common.Handler {
 		}
 
 		common.ReadAndServeFile(path, w)
+		return nil
+	}
+
+}
+
+func UploadFile() common.Handler {
+
+	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
+		d, err := ioutil.ReadFile("assets/config/config.json")
+		var config Config;
+		err = json.Unmarshal(d, &config)
+		if err != nil {
+			panic(err)
+		}
+
+		err = r.ParseMultipartForm(32 << 20)
+		path := strings.Join(r.Form["path"], "")
+
+		// Default to hot storage
+		storage := config.HotStorage
+
+		file, handler, err := r.FormFile("file")
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
+		defer file.Close()
+
+		f, err := os.OpenFile(storage+path+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		io.Copy(f, file)
 		return nil
 	}
 

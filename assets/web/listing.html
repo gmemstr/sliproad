@@ -19,6 +19,13 @@
         <h1>{{$prefix}}/{{$path}}</h1>
     </div>
     <div class="content">
+        {{ if eq $prefix "files" }}
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <input type="value" value="{{$path}}" name="path">
+            <input type="file" data-multiple-caption="{count} files selected" multiple name="file">
+            <input type="submit" value="Upload">
+        </form>
+        {{end}}
         <p class="directory"><a href="/{{$prefix}}/{{$prev}}">..</a></p>
         {{range $file := .Files}}
             {{ if $file.IsDir }}
