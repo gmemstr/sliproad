@@ -112,9 +112,8 @@ func ViewFile(tier string) common.Handler {
 		if err != nil {
 			panic(err)
 		}
-		file, err := ioutil.ReadFile(path)
 
-		w.Write(file)
+		common.ReadAndServeFile(path, w)
 		return nil
 	}
 
