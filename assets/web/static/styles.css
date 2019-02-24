@@ -2,16 +2,31 @@ body {
     font-family: Open Sans, Arial, sans-serif;
     color: #454545;
     font-size: 16px;
+    background-color: #fefefe;
+}
+
+h1, h2, h3 {
+    padding: 0;
+    margin: 0;
+}
+
+.content {
     margin: 2em auto;
     max-width: 800px;
     padding: 1em;
     line-height: 1.4;
     text-align: justify;
-    background-color: #fefefe;
 }
 
 .directory, .file {
     margin: 0;
+    padding: 0;
+}
+.directory a, .file a {
+    color: #454545;
+    text-decoration: none;
+    display: block;
+    width:100%;
     border: 1px solid #454545;
     margin-top: -1px;
     padding: 0.5em;
@@ -22,11 +37,27 @@ body {
     transition: background-color 0.5s linear;
 }
 
-.directory:hover, .file:hover {
+.directory:hover a , .file:hover a {
     background-color: lightgray;
     -webkit-transition: background-color 0.5s linear;
     -moz-transition: background-color 0.5s linear;
     -ms-transition: background-color 0.5s linear;
     -o-transition: background-color 0.5s linear;
     transition: background-color 0.5s linear;
+}
+
+.index {
+    display: flex;
+    text-align: center;
+    flex-direction: column;
+    font-size: 32px;
+}
+
+.index a {
+    color: #454545;
+    text-decoration: none;
+}
+
+a.back-button {
+    display: inline-block;
 }
