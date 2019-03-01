@@ -25,7 +25,7 @@ window.addEventListener("drop",function(e){
 
 
 var upload = (file) => {
-    var clkepath = document.getElementById("path").value;
+    var path = document.getElementById("path").value;
     var formData  = new FormData();
     formData.append("path", path);
     formData.append("file", file);
