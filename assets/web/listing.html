@@ -6,8 +6,13 @@
 <head>
     <title>{{ $path }} | PiNas</title>
     <link rel="stylesheet" href="/assets/styles.css">
+    <script type="text/javascript" src="/assets/fileListing.js"></script>
 </head>
-<body>
+<body ondragenter="dragEnter(event)" ondragexit="dragExit(event)">
+<div id="uploadoverlay" class="fileupload hidden">
+    <p><img src="/assets/svgs/newfile.svg" alt="">Upload</p>
+</div>
+
 <header>
     <a href="/" class="back-button">
         <img src="/assets/svgs/back.svg" alt="">
@@ -21,7 +26,7 @@
     <div class="content">
         {{ if eq $prefix "files" }}
         <form action="/upload" method="post" enctype="multipart/form-data">
-            <input type="value" value="{{$path}}" name="path">
+            <input id="path" type="value" value="{{$path}}" name="path">
             <input type="file" data-multiple-caption="{count} files selected" multiple name="file">
             <input type="submit" value="Upload">
         </form>
