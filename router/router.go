@@ -48,28 +48,47 @@ func Init() *mux.Router {
 	r.Handle("/", Handle(
 		rootHandler(),
 	)).Methods("GET")
+	r.Handle(`/files/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
+		fileList(),
+	)).Methods("GET")
+	r.Handle(`/files/`, Handle(
+		fileList(),
+	)).Methods("GET")
+	r.Handle(`/archive/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
+		fileList(),
+	)).Methods("GET")
+	r.Handle(`/archive/`, Handle(
+		fileList(),
+	)).Methods("GET")
 
-	r.Handle("/files/", Handle(
+
+	r.Handle("/api/files/", Handle(
 		files.Listing("hot"),
 	)).Methods("GET")
-	r.Handle(`/files/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
+	r.Handle(`/api/files/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
 		files.Listing("hot"),
 	)).Methods("GET")
 	r.Handle(`/file/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
 		files.ViewFile("hot"),
 	)).Methods("GET")
-	r.Handle("/upload", Handle(
+	r.Handle("/api/upload", Handle(
 		files.UploadFile(),
 	)).Methods("POST")
+	r.Handle(`/api/filesmd5/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
+		files.Md5File("hot"),
+	)).Methods("GET")
 
-	r.Handle("/archive/", Handle(
+	r.Handle("/api/archive/", Handle(
 		files.Listing("cold"),
 	)).Methods("GET")
-	r.Handle(`/archive/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
+	r.Handle(`/api/archive/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
 		files.Listing("cold"),
 	)).Methods("GET")
 	r.Handle(`/archived/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
 		files.ViewFile("cold"),
+	)).Methods("GET")
+	r.Handle(`/api/archivemd5/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
+		files.Md5File("cold"),
 	)).Methods("GET")
 
 	return r
@@ -84,6 +103,7 @@ func rootHandler() common.Handler {
 		case "/":
 			w.Header().Set("Content-Type", "text/html")
 			file = "assets/web/index.html"
+
 		default:
 			return &common.HTTPError{
 				Message:    fmt.Sprintf("%s: Not Found", r.URL.Path),
@@ -95,8 +115,11 @@ func rootHandler() common.Handler {
 	}
 }
 
-func adminHandler() common.Handler {
+func fileList() common.Handler {
 	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
-		return common.ReadAndServeFile("assets/web/admin.html", w)
+		w.Header().Set("Content-Type", "text/html")
+		file := "assets/web/listing.html"
+
+		return common.ReadAndServeFile(file, w)
 	}
 }

@@ -1,11 +1,12 @@
 package files
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/gmemstr/nas/common"
 	"github.com/gorilla/mux"
-	"html/template"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -20,10 +21,15 @@ type Config struct {
 
 type Directory struct {
 	Path         string
-	Files        []os.FileInfo
+	Files        []FileInfo
 	Previous     string
 	Prefix       string
 	SinglePrefix string
+}
+
+type FileInfo struct {
+	IsDirectory bool
+	Name        string
 }
 
 // Lists out directory using template.
@@ -62,6 +68,15 @@ func Listing(tier string) common.Handler {
 		}
 
 		fileDir, err := ioutil.ReadDir(path)
+		var fileList []FileInfo;
+
+		for _, file := range fileDir {
+			info := FileInfo{
+				IsDirectory: file.IsDir(),
+				Name: file.Name(),
+			}
+			fileList = append(fileList, info)
+		}
 		path = strings.Replace(path, storage, "", -1)
 
 		// Figure out what our previous location was.
@@ -71,19 +86,15 @@ func Listing(tier string) common.Handler {
 
 		directory := Directory{
 			Path:         path,
-			Files:        fileDir,
+			Files:        fileList,
 			Previous:     previousPath,
 			Prefix:       prefix,
 			SinglePrefix: singleprefix,
 		}
 
-		t, err := template.ParseFiles("assets/web/listing.html")
-		if err != nil {
-			panic(err)
-		}
-
-		t.Execute(w, directory)
-		return nil
+		resultJson, err := json.Marshal(directory);
+		w.Write(resultJson);
+		return nil;
 	}
 
 }
@@ -151,6 +162,53 @@ func UploadFile() common.Handler {
 		}
 		defer f.Close()
 		io.Copy(f, file)
+		return nil
+	}
+
+}
+
+func Md5File(tier string) common.Handler {
+
+	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
+		vars := mux.Vars(r)
+		id := vars["file"]
+
+		var returnMD5String string
+
+		d, err := ioutil.ReadFile("assets/config/config.json")
+		var config Config;
+		err = json.Unmarshal(d, &config)
+		if err != nil {
+			panic(err)
+		}
+
+		// Default to hot storage
+		storage := config.HotStorage
+
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
+		file, err := os.Open(storage + "/" + id)
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+
+		hash := md5.New()
+		if _, err := io.Copy(hash, file); err != nil {
+			panic(err)
+		}
+
+		//Get the 16 bytes hash
+		hashInBytes := hash.Sum(nil)[:16]
+
+		//Convert the bytes to a string
+		returnMD5String = hex.EncodeToString(hashInBytes)
+
+		w.Write([]byte(returnMD5String))
+
+
 		return nil
 	}
 

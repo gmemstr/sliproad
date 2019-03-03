@@ -17,6 +17,10 @@ you can also optionally use the `build-pi.sh` to build it for a raspberry pi (te
 
 then navigate to `localhost:3000`
 
+## api
+
+initially the heavy lifting was done by the server, but the need for a better frontend was clear.
+
 ## credits
 
 svg icons via https://iconsvg.xyz

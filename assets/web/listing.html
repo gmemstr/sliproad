@@ -1,51 +1,40 @@
-{{ $path := .Path }}
-{{ $prev := .Previous }}
-{{ $prefix := .Prefix }}
-{{ $singleprefix := .SinglePrefix }}
 <html>
 <head>
-    <title>{{ $path }} | PiNas</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="utf-8" http-equiv="encoding">
+    <title>| PiNas</title>
     <link rel="stylesheet" href="/assets/styles.css">
-    <script type="text/javascript" src="/assets/fileListing.js"></script>
+    <script type="text/javascript" src="/assets/app.js"></script>
 </head>
-<body ondragenter="dragEnter(event)" ondragexit="dragExit(event)">
+<body>
 <div id="uploadoverlay" class="fileupload hidden">
     <p><img src="/assets/svgs/newfile.svg" alt="">Upload</p>
 </div>
 
 <header>
     <a href="/" class="back-button">
-        <img src="/assets/svgs/back.svg" alt="">
+        <img src="/assets/svgs/back.svg" alt="" data-dismiss-context="false">
     </a>
     <h1 style="display: inline-block">PiNas</h1>
 </header>
 <main>
     <div>
-        <h1>{{$prefix}}/{{$path}}</h1>
+        <h1 id="path-header"></h1>
     </div>
-    <div class="content">
-        {{ if eq $prefix "files" }}
+    <div class="context-menu hidden" id="context" data-dismiss-context="false">
+        <ul class="context-actions">
+            <li>Archive</li>
+            <li>Get MD5</li>
+        </ul>
+    </div>
+    <div class="content" id="filelist">
         <form action="/upload" method="post" enctype="multipart/form-data">
-            <input id="path" type="value" value="{{$path}}" name="path">
+            <input id="path" type="value" name="path">
             <input type="file" data-multiple-caption="{count} files selected" multiple name="file">
             <input type="submit" value="Upload">
         </form>
-        {{end}}
-        <p class="directory"><a href="/{{$prefix}}/{{$prev}}">..</a></p>
-        {{range $file := .Files}}
-            {{ if $file.IsDir }}
-                <p class="directory"><a href="/{{$prefix}}/{{$path}}/{{$file.Name}}">
-                        <img src="/assets/svgs/directory.svg" alt="">
-                    {{$file.Name}}</a>
-                </p>
-            {{ end }}
-            {{ if not $file.IsDir }}
-                <p class="file"><a href="/{{$singleprefix}}/{{$path}}/{{$file.Name}}">
-                        <img src="/assets/svgs/file.svg" alt="">
-                        {{$file.Name}}</a>
-                </p>
-            {{end}}
-        {{end}}
+        <p class="directory"><a href="#" id="previous-dir">..</a></p>
     </div>
 </main>
 </body>

@@ -81,3 +81,19 @@ h1, h2, h3 {
 a.back-button {
     display: inline-block;
 }
+
+.context-menu {
+    background-color: #ededed;
+    padding: 10px;
+}
+
+.context-actions {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.context-actions li  {
+    border-bottom: 1px solid black;
+    cursor: pointer;
+}
