@@ -3,7 +3,7 @@
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="utf-8" http-equiv="encoding">
-    <title>| PiNas</title>
+    <title>| GoNAS</title>
     <link rel="stylesheet" href="/assets/styles.css">
     <script type="text/javascript" src="/assets/app.js"></script>
 </head>
@@ -16,7 +16,7 @@
     <a href="/" class="back-button">
         <img src="/assets/svgs/back.svg" alt="" data-dismiss-context="false">
     </a>
-    <h1 style="display: inline-block">PiNas</h1>
+    <h1 style="display: inline-block">GoNAS</h1>
 </header>
 <main>
     <div>
@@ -31,7 +31,7 @@
     <div class="content" id="filelist">
         <form action="/upload" method="post" enctype="multipart/form-data">
             <input id="path" type="value" name="path">
-            <input type="file" data-multiple-caption="{count} files selected" multiple name="file">
+            <input type="file" multiple name="file">
             <input type="submit" value="Upload">
         </form>
         <p class="directory"><a href="#" id="previous-dir">..</a></p>

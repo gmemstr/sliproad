@@ -7,6 +7,7 @@ import (
 
 	"github.com/gmemstr/nas/common"
 	"github.com/gmemstr/nas/files"
+	"github.com/gmemstr/nas/system"
 	"github.com/gorilla/mux"
 )
 
@@ -61,6 +62,9 @@ func Init() *mux.Router {
 		fileList(),
 	)).Methods("GET")
 
+	r.Handle("/api/diskusage", Handle(
+		system.DiskUsages(),
+	)).Methods("GET")
 
 	r.Handle("/api/files/", Handle(
 		files.Listing("hot"),

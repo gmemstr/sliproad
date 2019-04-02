@@ -3,14 +3,17 @@
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="utf-8" http-equiv="encoding">
-    <title>Home | PiNas</title>
+    <title>Home | GoNAS</title>
     <link rel="stylesheet" href="/assets/styles.css">
 </head>
 <body>
 <main>
     <div>
-        <img src="/assets/svgs/pi.svg" alt="">
-        <h1 style="display: inline-block">PiNas</h1>
+        <h1 style="display: inline-block">GoNAS</h1>
+        <p>Hot Storage Usage (<span id="hotUsagePercent"></span>%)</p>
+        <progress max="100" id="hotUsage"></progress>
+        <p>Cold Storage Usage (<span id="coldUsagePercent"></span>%)</p>
+        <progress max="100" id="coldUsage"></progress>
     </div>
     <div class="content index">
         <a href="/files/">
@@ -19,5 +22,31 @@
             <img src="/assets/svgs/coldfiles.svg" alt="">Cold Files</a>
     </div>
 </main>
+<script>
+    const $ = selector => document.querySelector(selector);
+
+    const init = event => {
+        getUsages();
+    }
+
+    const getUsages = () => {
+        fetch('/api/diskusage')
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (jsonResult) {
+                console.log(jsonResult);
+                let hot = (jsonResult.HotStorage.Free) / (jsonResult.HotStorage.Total) * 100;
+                let cold = (jsonResult.ColdStorage.Free) / (jsonResult.ColdStorage.Total) * 100;
+                // Flip values to reflect % used rather than % free.
+                $("#hotUsage").value = 100 - hot;
+                $("#hotUsagePercent").innerText = Math.floor(100 - hot);
+                $("#coldUsage").value = 100 - cold;
+                $("#coldUsagePercent").innerText = Math.floor(100 - cold);
+            });
+    }
+
+    window.addEventListener('load', init);
+</script>
 </body>
 </html>

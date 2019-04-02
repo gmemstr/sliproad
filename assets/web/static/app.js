@@ -1,4 +1,4 @@
-const $ = element => document.getElementById(element);
+const $ = selector => document.querySelector(selector);
 
 const init = event => {
     var path = window.location.pathname;
@@ -12,9 +12,9 @@ const init = event => {
         buildList(json);
     });
 
-    $("path-header").innerText = path;
-
-    document.querySelector("body").addEventListener('contextmenu', function(ev) {
+    $("#path-header").innerText = path;
+    $("#path").value = path;
+    document.querySelector("body").addEventListener('contextmenu', function (ev) {
         if (ev.target.localName == "a") {
             ev.preventDefault();
 
@@ -28,13 +28,13 @@ const init = event => {
         return false;
     }, false);
 
-    document.querySelector("body").addEventListener('click', function(ev) {
+    $("body").addEventListener('click', function (ev) {
         let shouldDismiss = ev.target.dataset.dismissContext == undefined && ev.target.parentElement.classList.contains("context-actions") == false && ev.target.localName != 'a';
 
         if (ev.which == 1 && shouldDismiss) {
             ev.preventDefault();
 
-            var d = document.getElementById('context');
+            var d = $('#context');
             d.classList.add("hidden");
             return false;
         }
@@ -58,20 +58,19 @@ const buildList = data => {
         if (data.Files[i].IsDirectory == true) {
             fileItem.classList.add("directory");
             fileLink.href = "/" + data.Prefix + "/" + data.Path + "/" + data.Files[i].Name;
-        }
-        else {
+        } else {
             fileItem.classList.add("file");
             fileLink.href = "/" + data.SinglePrefix + "/" + data.Path + "/" + data.Files[i].Name;
         }
 
         fileLink.innerText = data.Files[i].Name;
         fileItem.appendChild(fileLink);
-        document.getElementById("filelist").appendChild(fileItem);
+        $("#filelist").appendChild(fileItem);
     }
 }
 
 const upload = (file, path) => {
-    var formData  = new FormData();
+    var formData = new FormData();
     formData.append("path", path);
     formData.append("file", file);
     fetch('/upload', { // Your POST endpoint

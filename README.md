@@ -21,6 +21,8 @@ then navigate to `localhost:3000`
 
 initially the heavy lifting was done by the server, but the need for a better frontend was clear.
 
+full documentation coming soon once actual functionality has been nailed down.
+
 ## credits
 
 svg icons via https://iconsvg.xyz

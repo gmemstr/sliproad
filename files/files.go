@@ -44,7 +44,7 @@ func Listing(tier string) common.Handler {
 			panic(err)
 		}
 
-		var config Config;
+		var config Config
 		err = json.Unmarshal(d, &config)
 		if err != nil {
 			panic(err)
