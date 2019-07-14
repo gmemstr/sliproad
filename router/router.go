@@ -1,7 +1,10 @@
 package router
 
 import (
+	"database/sql"
 	"fmt"
+	"github.com/gmemstr/nas/auth"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 
@@ -10,15 +13,6 @@ import (
 	"github.com/gmemstr/nas/system"
 	"github.com/gorilla/mux"
 )
-
-type NewConfig struct {
-	Name        string
-	Host        string
-	Email       string
-	Description string
-	Image       string
-	PodcastURL  string
-}
 
 func Handle(handlers ...common.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -43,59 +37,127 @@ func Init() *mux.Router {
 	r := mux.NewRouter()
 
 	// "Static" paths
-	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets/web/static"))))
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("assets/web/static"))))
 
 	// Paths that require specific handlers
 	r.Handle("/", Handle(
+		auth.RequireAuthorization(1),
 		rootHandler(),
 	)).Methods("GET")
-	r.Handle(`/files/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
-		fileList(),
-	)).Methods("GET")
-	r.Handle(`/files/`, Handle(
-		fileList(),
-	)).Methods("GET")
-	r.Handle(`/archive/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
-		fileList(),
-	)).Methods("GET")
-	r.Handle(`/archive/`, Handle(
-		fileList(),
-	)).Methods("GET")
+
+	r.Handle(`/login`, Handle(
+		loginHandler(),
+	)).Methods("POST", "GET")
 
 	r.Handle("/api/diskusage", Handle(
+		auth.RequireAuthorization(1),
 		system.DiskUsages(),
 	)).Methods("GET")
 
-	r.Handle("/api/files/", Handle(
-		files.Listing("hot"),
-	)).Methods("GET")
-	r.Handle(`/api/files/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
-		files.Listing("hot"),
-	)).Methods("GET")
-	r.Handle(`/file/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
-		files.ViewFile("hot"),
+	r.Handle(`/api/file/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
+		auth.RequireAuthorization(1),
+		files.ViewFile(),
 	)).Methods("GET")
 	r.Handle("/api/upload", Handle(
 		files.UploadFile(),
 	)).Methods("POST")
-	r.Handle(`/api/filesmd5/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
-		files.Md5File("hot"),
-	)).Methods("GET")
 
-	r.Handle("/api/archive/", Handle(
-		files.Listing("cold"),
+	r.Handle("/api/{tier:(?:hot|cold)}/", Handle(
+		auth.RequireAuthorization(1),
+		files.Listing(),
 	)).Methods("GET")
-	r.Handle(`/api/archive/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
-		files.Listing("cold"),
-	)).Methods("GET")
-	r.Handle(`/archived/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
-		files.ViewFile("cold"),
-	)).Methods("GET")
-	r.Handle(`/api/archivemd5/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
-		files.Md5File("cold"),
+	r.Handle(`/api/{tier:^(?:hot|cold)$}/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
+		auth.RequireAuthorization(1),
+		files.Listing(),
 	)).Methods("GET")
 
 	return r
+}
+
+
+func loginHandler() common.Handler {
+	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
+		if r.Method == "GET" {
+			w.Header().Set("Content-Type", "text/html")
+			file := "assets/web/index.html"
+
+			return common.ReadAndServeFile(file, w)
+		}
+		db, err := sql.Open("sqlite3", "assets/config/users.db")
+
+		if err != nil {
+			return &common.HTTPError{
+				Message:    fmt.Sprintf("error in reading user database: %v", err),
+				StatusCode: http.StatusInternalServerError,
+			}
+		}
+
+		statement, err := db.Prepare("SELECT * FROM users WHERE username=?")
+
+		if _, err := auth.DecryptCookie(r); err == nil {
+			http.Redirect(w, r, "/admin", http.StatusTemporaryRedirect)
+			return nil
+		}
+
+		err = r.ParseForm()
+		if err != nil {
+			return &common.HTTPError{
+				Message:    fmt.Sprintf("error in parsing form: %v", err),
+				StatusCode: http.StatusBadRequest,
+			}
+		}
+
+		username := r.Form.Get("username")
+		password := r.Form.Get("password")
+		rows, err := statement.Query(username)
+
+		if username == "" || password == "" || err != nil {
+			return &common.HTTPError{
+				Message:    "username or password is invalid",
+				StatusCode: http.StatusBadRequest,
+			}
+		}
+		var id int
+		var dbun string
+		var dbhsh string
+		var dbrn string
+		var dbem string
+		var dbperm int
+		for rows.Next() {
+			err := rows.Scan(&id, &dbun, &dbhsh, &dbrn, &dbem, &dbperm)
+			if err != nil {
+				return &common.HTTPError{
+					Message:    fmt.Sprintf("error in decoding sql data", err),
+					StatusCode: http.StatusBadRequest,
+				}
+			}
+
+		}
+		// Create a cookie here because the credentials are correct
+		if bcrypt.CompareHashAndPassword([]byte(dbhsh), []byte(password)) == nil {
+			c, err := auth.CreateSession(&common.User{
+				Username: username,
+			})
+			if err != nil {
+				return &common.HTTPError{
+					Message:    err.Error(),
+					StatusCode: http.StatusInternalServerError,
+				}
+			}
+
+			// r.AddCookie(c)
+			w.Header().Add("Set-Cookie", c.String())
+			// And now redirect the user to admin page
+			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+			db.Close()
+			return nil
+		}
+
+		return &common.HTTPError{
+			Message:    "Invalid credentials!",
+			StatusCode: http.StatusUnauthorized,
+		}
+	}
 }
 
 // Handles /.
@@ -114,15 +176,6 @@ func rootHandler() common.Handler {
 				StatusCode: http.StatusNotFound,
 			}
 		}
-
-		return common.ReadAndServeFile(file, w)
-	}
-}
-
-func fileList() common.Handler {
-	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
-		w.Header().Set("Content-Type", "text/html")
-		file := "assets/web/listing.html"
 
 		return common.ReadAndServeFile(file, w)
 	}

@@ -3,8 +3,10 @@ package system
 import (
 	"encoding/json"
 	"github.com/gmemstr/nas/common"
+	"github.com/gmemstr/nas/files"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"syscall"
 )
 
@@ -41,20 +43,20 @@ func DiskUsages() common.Handler {
 			panic(err)
 		}
 
-		// Default to hot storage
-		storage := config.HotStorage
+		storage, _, _ := files.GetUserDirectory(r,"hot")
 		err = syscall.Statfs(storage, &statHot)
 		if err != nil {
-			panic(err)
+			_ = os.MkdirAll(storage, 0644)
 		}
 		hotStats := UsageStat{
-			Free: statHot.Bsize * int64(statHot.Bfree),
+			Free:  statHot.Bsize * int64(statHot.Bfree),
 			Total: statHot.Bsize * int64(statHot.Blocks),
 		}
-		storage = config.ColdStorage
+
+		storage, _, _ = files.GetUserDirectory(r,"cold")
 		err = syscall.Statfs(storage, &statCold)
 		if err != nil {
-			panic(err)
+			_ = os.MkdirAll(storage, 0644)
 		}
 		coldStats := UsageStat{
 			Free: statCold.Bsize * int64(statCold.Bfree),

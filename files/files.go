@@ -1,10 +1,9 @@
 package files
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/gmemstr/nas/auth"
 	"github.com/gmemstr/nas/common"
 	"github.com/gorilla/mux"
 	"io"
@@ -32,43 +31,64 @@ type FileInfo struct {
 	Name        string
 }
 
+func GetUserDirectory(r *http.Request, tier string) (string, string, string) {
+	usr, err := auth.DecryptCookie(r)
+	if err != nil {
+		return "", "", ""
+	}
+
+	username := usr.Username
+
+	d, err := ioutil.ReadFile("assets/config/config.json")
+	if err != nil {
+		panic(err)
+	}
+
+	var config Config
+	err = json.Unmarshal(d, &config)
+	if err != nil {
+		panic(err)
+	}
+
+	// Default to hot storage
+	storage := config.HotStorage + username
+	prefix := "files"
+	singleprefix := "file"
+	if tier == "cold" {
+		storage = config.ColdStorage + username
+		prefix = "archive"
+		singleprefix = "archived"
+	}
+
+	return storage, prefix, singleprefix
+}
+
 // Lists out directory using template.
-func Listing(tier string) common.Handler {
+func Listing() common.Handler {
 
 	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
 		vars := mux.Vars(r)
 		id := vars["file"]
-
-		d, err := ioutil.ReadFile("assets/config/config.json")
-		if err != nil {
-			panic(err)
-		}
-
-		var config Config
-		err = json.Unmarshal(d, &config)
-		if err != nil {
-			panic(err)
-		}
-		// Default to hot storage
-		storage := config.HotStorage
-		prefix := "files"
-		singleprefix := "file"
-		if tier == "cold" {
-			storage = config.ColdStorage
-			prefix = "archive"
-			singleprefix = "archived"
+		tier := vars["tier"]
+		storage, prefix, singleprefix := GetUserDirectory(r, tier)
+		if storage == "" && prefix == "" && singleprefix == "" {
+			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+			return &common.HTTPError{
+				Message:    "Unauthorized, or unable to find cookie",
+				StatusCode: http.StatusTemporaryRedirect,
+			}
 		}
 		path := storage
-
 		if id != "" {
-			path = path + id
-		}
-		if err != nil {
-			panic(err)
+			path = storage + id
 		}
 
 		fileDir, err := ioutil.ReadDir(path)
-		var fileList []FileInfo;
+		if err != nil && path == "" {
+			fmt.Println(path)
+			_ = os.MkdirAll(path, 0644)
+		}
+		var fileList []FileInfo
 
 		for _, file := range fileDir {
 			info := FileInfo{
@@ -100,11 +120,12 @@ func Listing(tier string) common.Handler {
 }
 
 // Lists out directory using template.
-func ViewFile(tier string) common.Handler {
+func ViewFile() common.Handler {
 
 	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
 		vars := mux.Vars(r)
 		id := vars["file"]
+		tier := vars["tier"]
 
 		d, err := ioutil.ReadFile("assets/config/config.json")
 		if err != nil {
@@ -117,14 +138,8 @@ func ViewFile(tier string) common.Handler {
 			panic(err)
 		}
 		// Default to hot storage
-		storage := config.HotStorage
-		if tier == "cold" {
-			storage = config.ColdStorage
-		}
+		storage, _, _ := GetUserDirectory(r, tier)
 		path := storage + id
-		if err != nil {
-			panic(err)
-		}
 
 		common.ReadAndServeFile(path, w)
 		return nil
@@ -162,53 +177,6 @@ func UploadFile() common.Handler {
 		}
 		defer f.Close()
 		io.Copy(f, file)
-		return nil
-	}
-
-}
-
-func Md5File(tier string) common.Handler {
-
-	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
-		vars := mux.Vars(r)
-		id := vars["file"]
-
-		var returnMD5String string
-
-		d, err := ioutil.ReadFile("assets/config/config.json")
-		var config Config;
-		err = json.Unmarshal(d, &config)
-		if err != nil {
-			panic(err)
-		}
-
-		// Default to hot storage
-		storage := config.HotStorage
-
-		if err != nil {
-			fmt.Println(err)
-			return nil
-		}
-		file, err := os.Open(storage + "/" + id)
-		if err != nil {
-			panic(err)
-		}
-		defer file.Close()
-
-		hash := md5.New()
-		if _, err := io.Copy(hash, file); err != nil {
-			panic(err)
-		}
-
-		//Get the 16 bytes hash
-		hashInBytes := hash.Sum(nil)[:16]
-
-		//Convert the bytes to a string
-		returnMD5String = hex.EncodeToString(hashInBytes)
-
-		w.Write([]byte(returnMD5String))
-
-
 		return nil
 	}
 

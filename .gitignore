@@ -19,3 +19,7 @@ config.json
 
 # Binary
 nas
+
+*.db
+.lock
+assets/web/*
