@@ -60,6 +60,13 @@ func GetUserDirectory(r *http.Request, tier string) (string, string, string) {
 		singleprefix = "archived"
 	}
 
+	// Ensure directory exists.
+	_, err = ioutil.ReadDir(storage)
+	if err != nil && storage == "" {
+		fmt.Println(storage)
+		_ = os.MkdirAll(storage, 0644)
+	}
+
 	return storage, prefix, singleprefix
 }
 
@@ -132,14 +139,14 @@ func ViewFile() common.Handler {
 			panic(err)
 		}
 
-		var config Config;
+		var config Config
 		err = json.Unmarshal(d, &config)
 		if err != nil {
 			panic(err)
 		}
 		// Default to hot storage
 		storage, _, _ := GetUserDirectory(r, tier)
-		path := storage + id
+		path := storage + "/" + id
 
 		common.ReadAndServeFile(path, w)
 		return nil
@@ -151,7 +158,11 @@ func UploadFile() common.Handler {
 
 	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
 		d, err := ioutil.ReadFile("assets/config/config.json")
-		var config Config;
+
+		vars := mux.Vars(r)
+		tier := vars["tier"]
+
+		var config Config
 		err = json.Unmarshal(d, &config)
 		if err != nil {
 			panic(err)
@@ -161,7 +172,7 @@ func UploadFile() common.Handler {
 		path := strings.Join(r.Form["path"], "")
 
 		// Default to hot storage
-		storage := config.HotStorage
+		storage, _, _ := GetUserDirectory(r, tier)
 
 		file, handler, err := r.FormFile("file")
 		if err != nil {

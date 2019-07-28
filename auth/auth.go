@@ -144,6 +144,23 @@ func CreateSession(u *common.User) (*http.Cookie, error) {
 		MaxAge: cookieExpiry,
 	}
 
+	// Insert token into database.
+	db, err := sql.Open("sqlite3", "assets/config/users.db")
+	defer db.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	statement, err := db.Prepare("UPDATE users SET token=? WHERE username=?")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = statement.Exec(cookieStr, u.Username)
+	if err != nil {
+		return nil, err
+	}
+
 	return c, nil
 }
 

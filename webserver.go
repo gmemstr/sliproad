@@ -40,7 +40,7 @@ func createDatabase() {
 		fmt.Println("Problem opening database file! %v", err)
 	}
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS `users` ( `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, `username` TEXT UNIQUE, `hash` TEXT, `realname` TEXT, `email` TEXT, `permissions` INTEGER )")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS `users` ( `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, `username` TEXT UNIQUE, `hash` TEXT, `token` TEXT, `permissions` INTEGER )")
 	if err != nil {
 		fmt.Println("Problem creating database! %v", err)
 	}
@@ -57,7 +57,7 @@ func createDatabase() {
 	if bcrypt.CompareHashAndPassword(hash, []byte(text)) == nil {
 		fmt.Println("Password hashed")
 	}
-	_, err = db.Exec("INSERT INTO users(id,username,hash,realname,email,permissions) VALUES (0,'admin','" + string(hash) + "','Administrator','admin@localhost',2)")
+	_, err = db.Exec("INSERT INTO users(id,username,hash,permissions) VALUES (0,'admin','" + string(hash) + "',2)")
 	if err != nil {
 		fmt.Println("Problem creating database! %v", err)
 	}

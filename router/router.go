@@ -54,11 +54,18 @@ func Init() *mux.Router {
 		system.DiskUsages(),
 	)).Methods("GET")
 
-	r.Handle(`/api/file/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
+	r.Handle(`/api/{tier:(?:hot|cold)}/file/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
 		auth.RequireAuthorization(1),
 		files.ViewFile(),
 	)).Methods("GET")
-	r.Handle("/api/upload", Handle(
+
+	r.Handle("/api/upload/hot", Handle(
+		auth.RequireAuthorization(1),
+		files.UploadFile(),
+	)).Methods("POST")
+
+	r.Handle("/api/upload/{tier:(?:hot|cold)}", Handle(
+		auth.RequireAuthorization(1),
 		files.UploadFile(),
 	)).Methods("POST")
 
@@ -66,7 +73,8 @@ func Init() *mux.Router {
 		auth.RequireAuthorization(1),
 		files.Listing(),
 	)).Methods("GET")
-	r.Handle(`/api/{tier:^(?:hot|cold)$}/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
+
+	r.Handle(`/api/{tier:(?:hot|cold)}/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
 		auth.RequireAuthorization(1),
 		files.Listing(),
 	)).Methods("GET")
@@ -120,11 +128,10 @@ func loginHandler() common.Handler {
 		var id int
 		var dbun string
 		var dbhsh string
-		var dbrn string
-		var dbem string
+		var dbtoken sql.NullString
 		var dbperm int
 		for rows.Next() {
-			err := rows.Scan(&id, &dbun, &dbhsh, &dbrn, &dbem, &dbperm)
+			err := rows.Scan(&id, &dbun, &dbhsh, &dbtoken, &dbperm)
 			if err != nil {
 				return &common.HTTPError{
 					Message:    fmt.Sprintf("error in decoding sql data", err),

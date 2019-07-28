@@ -9,7 +9,7 @@ class App extends Component {
         <div className="App">
           <Route exact path="/" component={Homepage} />
           <Route exact path="/login" component={Login} />
-          <Route exact path="/hot" component={HotFileListing} />
+          <Route path="/hot/:dir?" component={HotFileListing} />
         </div>
       </BrowserRouter>
     );
@@ -20,7 +20,7 @@ class Login extends Component {
   render() {
     return (
       <div className="LoginForm">
-        <form>
+        <form method="POST">
           <label>Username <input type="text" name="username"></input></label>
           <label>Password <input type="password" name="password"></input></label>
           <input type="submit" value="Login"></input>
@@ -78,13 +78,38 @@ class HotFileListing extends Component {
     this.state = {
       files: [],
       loading: true,
+      directory: "",
     };
   };
 
   componentDidMount() {
-    fetch("/api/hot/")
+    const { match: { params } } = this.props;
+    this.setState({directory: params.dir});
+
+    this.loadFileListing(params.dir);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { match: { params } } = this.props;
+    console.log("Prev state: ", prevState);
+
+    if (prevState.directory != params.dir) {
+      this.setState({directory: params.dir});
+      this.loadFileListing(params.dir);
+    }
+  }
+
+  loadFileListing(dir) {
+    if (dir != undefined) {
+    fetch("/api/hot/" + dir)
       .then(response => response.json())
       .then(data => this.setState({ files: data, loading: false }));
+    }
+    else {
+      fetch("/api/hot/")
+      .then(response => response.json())
+      .then(data => this.setState({ files: data, loading: false }));
+    }
   }
 
   render() {
@@ -93,22 +118,44 @@ class HotFileListing extends Component {
     if (loading) {
       return <div className="LoadingSpinner"><div></div><div></div><div></div><div></div></div>;
     }
+    if (!loading && !this.state.files.Files) {
+      return (
+        <div>
+          <FileUploadForm tier="hot" />
+          Empty
+        </div>
+      )
+    }
 
     return (
       <div>
-          <FileList files={this.state.files.Files} />
+          <FileUploadForm tier="hot" />
+          <FileList files={this.state.files.Files} tier="hot" />
       </div>
+    )
+  }
+}
+
+class FileUploadForm extends Component {
+  render() {
+    return (
+      <form className="FileUpload" enctype="multipart/form-data" method="POST" action={`/api/upload/${this.props.tier}`}>
+        <input type="file" name="file" id="file" />
+        <input type="submit" value="Upload" />
+      </form>
     )
   }
 }
 
 class FileList extends Component {
   render () {
+    console.log(this.props.files);
     let fileComponents = this.props.files.map((file) => {
+      console.log(file)
       if (file.IsDirectory) {
-      return <Directory dir={file}/>
+        return <Directory dir={file} tier={this.props.tier} />
       }
-      return <File file={file}/>
+      return <File file={file} tier={this.props.tier} />
     })
     return (
       <div>
@@ -122,7 +169,7 @@ class Directory extends Component {
   render() {
     return (
       <div>
-        <p>{this.props.dir.Name}/</p>
+        <Link to={`/${this.props.tier}/${this.props.dir.Name}`}>{this.props.dir.Name}/</Link>
       </div>
     )
   }
@@ -132,7 +179,7 @@ class File extends Component {
   render() {
     return (
       <div>
-        <p>{this.props.file.Name}</p>
+        <a href={`/api/${this.props.tier}/file/${this.props.file.Name}`}>{this.props.file.Name}</a>
       </div>
     )
   }
