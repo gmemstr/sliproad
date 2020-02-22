@@ -10,6 +10,7 @@ class App extends Component {
           <Route exact path="/" component={Homepage} />
           <Route exact path="/login" component={Login} />
           <Route path="/hot/:dir?" component={HotFileListing} />
+          <Route path="/cold/:dir?" component={ColdFileListing} />
         </div>
       </BrowserRouter>
     );
@@ -133,6 +134,21 @@ class HotFileListing extends Component {
           <FileList files={this.state.files.Files} tier="hot" />
       </div>
     )
+  }
+}
+
+class ColdFileListing extends HotFileListing {
+    loadFileListing(dir) {
+    if (dir != undefined) {
+    fetch("/api/cold/" + dir)
+      .then(response => response.json())
+      .then(data => this.setState({ files: data, loading: false }));
+    }
+    else {
+      fetch("/api/cold/")
+      .then(response => response.json())
+      .then(data => this.setState({ files: data, loading: false }));
+    }
   }
 }
 
