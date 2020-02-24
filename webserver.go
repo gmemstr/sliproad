@@ -11,7 +11,10 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"fmt"
+	"github.com/gmemstr/nas/files"
+	"github.com/go-yaml/yaml"
 	"golang.org/x/crypto/bcrypt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -25,6 +28,16 @@ func main() {
 		createDatabase()
 		createLockFile()
 	}
+
+	file, err := ioutil.ReadFile("providers.yml")
+	if err != nil {
+		panic(err)
+	}
+	err = yaml.Unmarshal(file, &files.Providers)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(files.Providers)
 
 	r := router.Init()
 	fmt.Println("Your NAS instance is live on port :3000")

@@ -9,8 +9,6 @@ import (
 	"net/http"
 
 	"github.com/gmemstr/nas/common"
-	"github.com/gmemstr/nas/files"
-	"github.com/gmemstr/nas/system"
 	"github.com/gorilla/mux"
 )
 
@@ -49,34 +47,19 @@ func Init() *mux.Router {
 		loginHandler(),
 	)).Methods("POST", "GET")
 
-	r.Handle("/api/diskusage", Handle(
+	r.Handle("/api/providers", Handle(
 		auth.RequireAuthorization(1),
-		system.DiskUsages(),
+		ListProviders(),
+	)).Methods("GET")
+	
+	r.Handle(`/api/files/{provider}`, Handle(
+		//auth.RequireAuthorization(1),
+		HandleProvider(),
 	)).Methods("GET")
 
-	r.Handle(`/api/{tier:(?:hot|cold)}/file/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
-		auth.RequireAuthorization(1),
-		files.ViewFile(),
-	)).Methods("GET")
-
-	r.Handle("/api/upload/hot", Handle(
-		auth.RequireAuthorization(1),
-		files.UploadFile(),
-	)).Methods("POST")
-
-	r.Handle("/api/upload/{tier:(?:hot|cold)}", Handle(
-		auth.RequireAuthorization(1),
-		files.UploadFile(),
-	)).Methods("POST")
-
-	r.Handle("/api/{tier:(?:hot|cold)}/", Handle(
-		auth.RequireAuthorization(1),
-		files.Listing(),
-	)).Methods("GET")
-
-	r.Handle(`/api/{tier:(?:hot|cold)}/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
-		auth.RequireAuthorization(1),
-		files.Listing(),
+	r.Handle(`/api/files/{provider}/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
+		//auth.RequireAuthorization(1),
+		HandleProvider(),
 	)).Methods("GET")
 
 	return r

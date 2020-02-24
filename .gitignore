@@ -14,8 +14,8 @@
 # IntelliJ
 .idea/
 
-# Config file
-config.json
+# Config files
+providers.yml
 
 # Binary
 nas
