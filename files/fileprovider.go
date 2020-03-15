@@ -3,15 +3,16 @@ package files
 import "fmt"
 
 type FileProvider struct {
-	Name string `yaml:"name"`
-	Authentication string `yaml:"authentication"`
-	Location string `yaml:"path"`
-	Config map[string]string `yaml:"config"`
+	Name           string            `yaml:"name"`
+	Provider       string            `yaml:"provider"`
+	Authentication string            `yaml:"authentication"`
+	Location       string            `yaml:"path"`
+	Config         map[string]string `yaml:"config"`
 }
 
 type Directory struct {
-	Path         string
-	Files        []FileInfo
+	Path  string
+	Files []FileInfo
 }
 
 type FileInfo struct {
@@ -22,10 +23,16 @@ type FileInfo struct {
 
 var Providers map[string]FileProvider
 
+type FileContents struct {
+	Content []byte
+	IsUrl   bool
+}
+
 type FileProviderInterface interface {
 	GetDirectory(path string) Directory
-	ViewFile(path string) string
+	ViewFile(path string) []byte
 	SaveFile(contents []byte, path string) bool
+	DetermineType(path string) string
 }
 
 func TranslateProvider(codename string, i *FileProviderInterface) {
@@ -35,7 +42,7 @@ func TranslateProvider(codename string, i *FileProviderInterface) {
 		return
 	}
 	if codename == "backblaze" {
-		bbProv := &BackblazeProvider{provider, provider.Config["bucket"]}
+		bbProv := &BackblazeProvider{provider, provider.Config["bucket"], ""}
 
 		err := bbProv.Authorize(provider.Config["appKeyId"], provider.Config["appId"])
 		if err != nil {
@@ -52,10 +59,14 @@ func (f FileProvider) GetDirectory(path string) Directory {
 	return Directory{}
 }
 
-func (f FileProvider) ViewFile(path string) string {
-	return ""
+func (f FileProvider) ViewFile(path string) []byte {
+	return nil
 }
 
 func (f FileProvider) SaveFile(contents []byte, path string) bool {
 	return false
+}
+
+func (f FileProvider) DetermineType(path string) string {
+	return ""
 }

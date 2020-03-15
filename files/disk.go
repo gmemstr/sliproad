@@ -36,8 +36,13 @@ func (dp *DiskProvider) GetDirectory(path string) Directory {
 	}
 }
 
-func (dp *DiskProvider) ViewFile(path string) string {
-	return strings.Join([]string{dp.Location,path}, "/")
+func (dp *DiskProvider) ViewFile(path string) []byte {
+	file := strings.Join([]string{dp.Location,path}, "/")
+	fileContents, err := ioutil.ReadFile(file)
+	if err != nil {
+		return nil
+	}
+	return fileContents
 }
 
 func (dp *DiskProvider) SaveFile(contents []byte, path string) bool {
@@ -46,4 +51,17 @@ func (dp *DiskProvider) SaveFile(contents []byte, path string) bool {
 		return false
 	}
 	return true
+}
+
+func (dp *DiskProvider) DetermineType(path string) string {
+	rp := strings.Join([]string{dp.Location,path}, "/")
+	file, err := os.Stat(rp)
+	if err != nil {
+		return ""
+	}
+	if file.IsDir() {
+		return "directory"
+	}
+
+	return "file"
 }

@@ -19,6 +19,16 @@ func HandleProvider() common.Handler {
 
 			fileList := provider.GetDirectory("")
 			if vars["file"] != "" {
+				fileType := provider.DetermineType(vars["file"])
+				if fileType == "" {
+					w.Write([]byte("file not found"))
+					return nil
+				}
+				if fileType == "file" {
+					file := provider.ViewFile(vars["file"])
+					w.Write(file)
+					return nil
+				}
 				fileList = provider.GetDirectory(vars["file"])
 			}
 			data, err := json.Marshal(fileList)
