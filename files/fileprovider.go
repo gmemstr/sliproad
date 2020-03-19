@@ -1,6 +1,9 @@
 package files
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+)
 
 type FileProvider struct {
 	Name           string            `yaml:"name"`
@@ -30,7 +33,7 @@ type FileContents struct {
 
 type FileProviderInterface interface {
 	GetDirectory(path string) Directory
-	ViewFile(path string) []byte
+	ViewFile(path string, w io.Writer)
 	SaveFile(contents []byte, path string) bool
 	DetermineType(path string) string
 }
@@ -41,6 +44,10 @@ func TranslateProvider(codename string, i *FileProviderInterface) {
 		*i = &DiskProvider{provider,}
 		return
 	}
+	/*
+	 * @TODO: It would be ideal if the authorization with Backblaze was done before
+	 * actually needing to use it, ideally during the startup step.
+	 */
 	if codename == "backblaze" {
 		bbProv := &BackblazeProvider{provider, provider.Config["bucket"], ""}
 
@@ -59,8 +66,8 @@ func (f FileProvider) GetDirectory(path string) Directory {
 	return Directory{}
 }
 
-func (f FileProvider) ViewFile(path string) []byte {
-	return nil
+func (f FileProvider) ViewFile(path string, w io.Writer) {
+	return
 }
 
 func (f FileProvider) SaveFile(contents []byte, path string) bool {

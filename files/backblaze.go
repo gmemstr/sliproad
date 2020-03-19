@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -123,7 +124,7 @@ func (bp *BackblazeProvider) GetDirectory(path string) Directory {
 	return finalDir
 }
 
-func (bp *BackblazeProvider) ViewFile(path string) []byte {
+func (bp *BackblazeProvider) ViewFile(path string, w io.Writer) {
 	client := &http.Client{}
 	// Get bucket name >:(
 	bucketIdPayload := fmt.Sprintf(`{"accountId": "%s", "bucketId": "%s"}`, bp.Name, bp.Bucket)
@@ -145,22 +146,21 @@ func (bp *BackblazeProvider) ViewFile(path string) []byte {
 		bytes.NewBuffer([]byte("")))
 	if err != nil {
 		fmt.Println(err.Error())
-		return nil
+		return
 	}
 	req.Header.Add("Authorization", bp.Authentication)
 	file, err := client.Do(req)
 
 	if err != nil {
 		fmt.Println(err.Error())
-		return nil
+		return
 	}
 
-	fileBytes, err := ioutil.ReadAll(file.Body)
+	_, err = io.Copy(w, file.Body)
 	if err != nil {
 		fmt.Println(err.Error())
-		return nil
+		return
 	}
-	return fileBytes
 }
 
 func (bp *BackblazeProvider) SaveFile(contents []byte, path string) bool {

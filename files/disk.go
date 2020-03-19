@@ -1,6 +1,7 @@
 package files
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -36,13 +37,16 @@ func (dp *DiskProvider) GetDirectory(path string) Directory {
 	}
 }
 
-func (dp *DiskProvider) ViewFile(path string) []byte {
+func (dp *DiskProvider) ViewFile(path string, w io.Writer) {
 	file := strings.Join([]string{dp.Location,path}, "/")
-	fileContents, err := ioutil.ReadFile(file)
+	fileReader, err := os.Open(file)
 	if err != nil {
-		return nil
+		return
 	}
-	return fileContents
+	_, err = io.Copy(w, fileReader)
+	if err != nil {
+		return
+	}
 }
 
 func (dp *DiskProvider) SaveFile(contents []byte, path string) bool {

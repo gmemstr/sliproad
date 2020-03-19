@@ -25,8 +25,7 @@ func HandleProvider() common.Handler {
 					return nil
 				}
 				if fileType == "file" {
-					file := provider.ViewFile(vars["file"])
-					w.Write(file)
+					provider.ViewFile(vars["file"], w)
 					return nil
 				}
 				fileList = provider.GetDirectory(vars["file"])

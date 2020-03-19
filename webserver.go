@@ -29,6 +29,7 @@ func main() {
 		createLockFile()
 	}
 
+	// Initialize file providers.
 	file, err := ioutil.ReadFile("providers.yml")
 	if err != nil {
 		panic(err)
@@ -37,7 +38,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(files.Providers)
 
 	r := router.Init()
 	fmt.Println("Your NAS instance is live on port :3000")
