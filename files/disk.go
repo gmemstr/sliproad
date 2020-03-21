@@ -11,6 +11,10 @@ type DiskProvider struct{
 	FileProvider
 }
 
+func (dp *DiskProvider) Setup(args map[string]string) bool {
+	return true
+}
+
 func (dp *DiskProvider) GetDirectory(path string) Directory {
 	rp := strings.Join([]string{dp.Location,path}, "/")
 	fileDir, err := ioutil.ReadDir(rp)

@@ -14,8 +14,7 @@ func HandleProvider() common.Handler {
 		vars := mux.Vars(r)
 		if r.Method == "GET" {
 			providerCodename := vars["provider"]
-			var provider files.FileProviderInterface
-			files.TranslateProvider(providerCodename, &provider)
+			provider := *files.Providers[providerCodename]
 
 			fileList := provider.GetDirectory("")
 			if vars["file"] != "" {

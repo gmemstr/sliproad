@@ -45,37 +45,42 @@ type BackblazeBucketInfoPayload struct {
 }
 
 // Call Backblaze API endpoint to authorize and gather facts.
-func (bp *BackblazeProvider) Authorize(appKeyId string, appKey string) error {
+func (bp *BackblazeProvider) Setup(args map[string]string) bool {
+	applicationKeyId := args["applicationKeyId"]
+	applicationKey := args["applicationKey"]
+
 	client := &http.Client{}
 	req, err := http.NewRequest("GET",
 		"https://api.backblazeb2.com/b2api/v2/b2_authorize_account",
 		nil)
 	if err != nil {
-		return err
+		return false
 	}
-	req.SetBasicAuth(appKeyId, appKey)
+	req.SetBasicAuth(applicationKeyId, applicationKey)
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return false
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+
 	if err != nil {
-		return err
+		return false
 	}
 
 	var data BackblazeAuthPayload
 
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		return err
+		return false
 	}
+
 	bp.Authentication = data.AuthToken
 	bp.Location = data.ApiUrl
 	bp.Name = data.AccountId
 	bp.DownloadLocation = data.DownloadUrl
-	
-	return nil
+
+	return true
 }
 
 func (bp *BackblazeProvider) GetDirectory(path string) Directory {
@@ -131,10 +136,22 @@ func (bp *BackblazeProvider) ViewFile(path string, w io.Writer) {
 
 	req, err := http.NewRequest("POST", bp.Location + "/b2api/v2/b2_list_buckets",
 		bytes.NewBuffer([]byte(bucketIdPayload)))
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
 	req.Header.Add("Authorization", bp.Authentication)
 
 	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
 	bucketData, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
 
 	var data BackblazeBucketInfoPayload
 	json.Unmarshal(bucketData, &data)
@@ -169,4 +186,8 @@ func (bp *BackblazeProvider) SaveFile(contents []byte, path string) bool {
 
 func (bp *BackblazeProvider) DetermineType(path string) string {
 	return "file"
+}
+
+func (bp *BackblazeProvider) GetProviderConfig() FileProvider {
+	return ProviderConfig[bp.Name]
 }

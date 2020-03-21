@@ -1,7 +1,6 @@
 package files
 
 import (
-	"fmt"
 	"io"
 )
 
@@ -24,44 +23,24 @@ type FileInfo struct {
 	Extension   string
 }
 
-var Providers map[string]FileProvider
-
 type FileContents struct {
 	Content []byte
 	IsUrl   bool
 }
 
 type FileProviderInterface interface {
+	Setup(args map[string]string) bool
 	GetDirectory(path string) Directory
 	ViewFile(path string, w io.Writer)
 	SaveFile(contents []byte, path string) bool
 	DetermineType(path string) string
 }
 
-func TranslateProvider(codename string, i *FileProviderInterface) {
-	provider := Providers[codename]
-	if codename == "disk" {
-		*i = &DiskProvider{provider,}
-		return
-	}
-	/*
-	 * @TODO: It would be ideal if the authorization with Backblaze was done before
-	 * actually needing to use it, ideally during the startup step.
-	 */
-	if codename == "backblaze" {
-		bbProv := &BackblazeProvider{provider, provider.Config["bucket"], ""}
-
-		err := bbProv.Authorize(provider.Config["appKeyId"], provider.Config["appId"])
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-		*i = bbProv
-		return
-	}
-	*i = FileProvider{}
+/** DO NOT USE THESE DEFAULTS **/
+func (f FileProvider) Setup(args map[string]string) bool {
+	return false
 }
 
-/** DO NOT USE THESE DEFAULTS **/
 func (f FileProvider) GetDirectory(path string) Directory {
 	return Directory{}
 }
@@ -77,3 +56,4 @@ func (f FileProvider) SaveFile(contents []byte, path string) bool {
 func (f FileProvider) DetermineType(path string) string {
 	return ""
 }
+

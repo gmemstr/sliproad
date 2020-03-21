@@ -1,9 +1,3 @@
-/* webserver.go
- *
- * This is the webserver handler for Pogo, and handles
- * all incoming connections, including authentication.
- */
-
 package main
 
 import (
@@ -34,10 +28,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err = yaml.Unmarshal(file, &files.Providers)
+	err = yaml.Unmarshal(file, &files.ProviderConfig)
 	if err != nil {
 		panic(err)
 	}
+	files.SetupProviders()
 
 	r := router.Init()
 	fmt.Println("Your NAS instance is live on port :3000")
