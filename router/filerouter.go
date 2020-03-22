@@ -6,6 +6,8 @@ import (
 	"github.com/gmemstr/nas/files"
 	"github.com/gorilla/mux"
 	"net/http"
+	"sort"
+	"strings"
 )
 
 func HandleProvider() common.Handler {
@@ -14,6 +16,7 @@ func HandleProvider() common.Handler {
 		vars := mux.Vars(r)
 		if r.Method == "GET" {
 			providerCodename := vars["provider"]
+			providerCodename = strings.Replace(providerCodename, "/", "", -1)
 			provider := *files.Providers[providerCodename]
 
 			fileList := provider.GetDirectory("")
@@ -44,6 +47,16 @@ func HandleProvider() common.Handler {
 func ListProviders() common.Handler {
 
 	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
+		var providers []string
+		for v, _ := range files.ProviderConfig {
+			providers = append(providers, v)
+		}
+		sort.Strings(providers)
+		data, err := json.Marshal(providers)
+		if err != nil {
+			return nil
+		}
+		w.Write(data)
 		return nil
 	}
 }

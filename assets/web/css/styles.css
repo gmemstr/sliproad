@@ -1,0 +1,48 @@
+* {
+    font-family: sans-serif;
+}
+
+body {
+
+}
+
+.grid-lg, .grid-sm {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 2fr);
+    grid-column-gap: 5px;
+    grid-row-gap: 5px;
+}
+
+.grid-lg a {
+    display: flex;
+    padding: 10vh;
+    justify-content: center;
+    background-color: black;
+    font-size: 32px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.5s;
+}
+
+.grid-sm a {
+    display: flex;
+    padding: 2vh;
+    justify-content: center;
+    background-color: black;
+    font-size: 24px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.5s;
+}
+
+.grid-lg a:visited, .grid-lg a,
+.grid-sm a:visited, .grid-sm a {
+    color: white;
+}
+.grid-lg a:hover,
+.grid-sm a:hover {
+    color: white;
+    background-color: darkgray;
+    transition: background-color 0.5s;
+}

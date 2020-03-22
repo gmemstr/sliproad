@@ -35,11 +35,12 @@ func Init() *mux.Router {
 	r := mux.NewRouter()
 
 	// "Static" paths
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("assets/web/static"))))
+	r.PathPrefix("/javascript/").Handler(http.StripPrefix("/javascript/", http.FileServer(http.Dir("assets/web/javascript"))))
+	r.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("assets/web/css"))))
 
 	// Paths that require specific handlers
 	r.Handle("/", Handle(
-		auth.RequireAuthorization(1),
+		//auth.RequireAuthorization(1),
 		rootHandler(),
 	)).Methods("GET")
 
@@ -48,11 +49,11 @@ func Init() *mux.Router {
 	)).Methods("POST", "GET")
 
 	r.Handle("/api/providers", Handle(
-		auth.RequireAuthorization(1),
+		//auth.RequireAuthorization(1),
 		ListProviders(),
 	)).Methods("GET")
 	
-	r.Handle(`/api/files/{provider}`, Handle(
+	r.Handle(`/api/files/{provider:[a-zA-Z0-9]+\/*}`, Handle(
 		//auth.RequireAuthorization(1),
 		HandleProvider(),
 	)).Methods("GET")
