@@ -12,7 +12,7 @@ function getFileListing(provider, path = "") {
       html`
       <div class="grid-sm">
         ${files.map(file =>
-          `<a href="${!file.IsDirectory ? `/api/files/${provider}${path}/${file.Name}` : `#${provider + "/" + file.Name}`}">
+          `<a href="${!file.IsDirectory ? `/api/files/${provider}${path}/${file.Name}` : `#${provider}/${path !== "" ? path.replace("/","") + "/" : ""}${file.Name}`}">
             ${file.Name}${file.IsDirectory ? '/' : ''}
           </a>
           `
@@ -52,7 +52,7 @@ function router(event = null) {
 
   let path = hash.split("/")
   let provider = path.shift()
-  console.log(path, provider)
+  path = path.join("/")
   getFileListing(provider, "/" + path)
 }
 

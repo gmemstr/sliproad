@@ -35,19 +35,17 @@ this project uses go modules and a makefile, so building should be relatively st
 
  - `make` will build the project for your system's architecture.
  - `make pi` will build the project with the `GOOS=linux GOARCH=arm GOARM=5 go` flags set for raspberry pis.
+ 
+### providers
 
-## api
+there are a few built-in providers, and more can be added by opening a pull request.
 
-initially the heavy lifting was done by the server, but the need for a better frontend was clear.
+|name|service|configuration example|
+|----|-------|---------------------|
+|disk|local filesystem|disk.yml|
+|backblaze|backblaze b2|backblaze.yml|
 
-full documentation coming soon once actual functionality has been nailed down.
+#### custom provider
 
-## providers
-
-// todo
-
-## credits
-
-svg icons via https://iconsvg.xyz
-
-raspberry pi svg via https://www.vectorlogo.zone/logos/raspberrypi/index.html
+custom file providers can be implemented by adding a new go file to the `files` module. it should
+implement the `FileProviderInterface` interface.

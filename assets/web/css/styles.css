@@ -1,9 +1,6 @@
-* {
-    font-family: sans-serif;
-}
-
 body {
-
+    font-family: sans-serif;
+    color: black;
 }
 
 .grid-lg, .grid-sm {
@@ -45,4 +42,22 @@ body {
     color: white;
     background-color: darkgray;
     transition: background-color 0.5s;
+}
+
+@media (prefers-color-scheme: dark) {
+    body { background-color: black; color: white; }
+    .grid-lg a, .grid-sm a {
+        background-color: white;
+        color: black;
+    }
+    .grid-lg a:visited, .grid-lg a,
+    .grid-sm a:visited, .grid-sm a {
+        color: black
+    }
+    .grid-lg a:hover,
+    .grid-sm a:hover {
+        color: lightgray;
+        background-color: darkgray;
+        transition: background-color 0.5s;
+    }
 }
