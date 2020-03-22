@@ -61,3 +61,17 @@ body {
         transition: background-color 0.5s;
     }
 }
+
+@media only screen and (max-width: 700px) {
+    .grid-lg, .grid-sm {
+        display: block;
+    }
+    .grid-lg a, .grid-sm a {
+        margin: 10px;
+    }
+}
+@media only screen and (min-width: 1921px) {
+    .grid-lg, .grid-sm {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
