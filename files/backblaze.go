@@ -25,10 +25,10 @@ type BackblazeAuthPayload struct {
 
 type BackblazeFile struct {
 	Action string `json:"action"`
-	Size int `json:"contentLength"`
+	Size int64 `json:"contentLength"`
 	Type string `json:"contentType"`
 	FileName string `json:"fileName"`
-	Timestamp int `json:"uploadTimestamp"`
+	Timestamp int64 `json:"uploadTimestamp"`
 }
 
 type BackblazeFilePayload struct {
@@ -92,16 +92,19 @@ func (bp *BackblazeProvider) GetDirectory(path string) Directory {
 		bp.Location + "/b2api/v2/b2_list_file_names",
 		bytes.NewBuffer([]byte(requestBody)))
 	if err != nil {
+		fmt.Println(err.Error())
 		return Directory{}
 	}
 	req.Header.Add("Authorization", bp.Authentication)
 	resp, err := client.Do(req)
 	if err != nil {
+		fmt.Println(err.Error())
 		return Directory{}
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		fmt.Println(err.Error())
 		return Directory{}
 	}
 
