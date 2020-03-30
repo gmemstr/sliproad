@@ -2,6 +2,7 @@ package router
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gmemstr/nas/common"
 	"github.com/gmemstr/nas/files"
 	"github.com/gorilla/mux"
@@ -38,6 +39,26 @@ func HandleProvider() common.Handler {
 				return nil
 			}
 			w.Write(data)
+		}
+		if r.Method == "POST" {
+			providerCodename := vars["provider"]
+			providerCodename = strings.Replace(providerCodename, "/", "", -1)
+			provider := *files.Providers[providerCodename]
+			err := r.ParseMultipartForm(32 << 20)
+			if err != nil {
+				w.Write([]byte("unable to parse form"))
+				fmt.Println(err.Error())
+				return nil
+			}
+			file, handler, err := r.FormFile("file")
+			defer file.Close()
+
+			success := provider.SaveFile(file, handler, vars["file"])
+			if !success {
+				w.Write([]byte("unable to save file"))
+				return nil
+			}
+			w.Write([]byte("saved file"))
 		}
 
 		return nil

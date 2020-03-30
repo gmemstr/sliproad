@@ -2,10 +2,12 @@ package files
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"strings"
 )
@@ -42,6 +44,11 @@ type BackblazeBucketInfo struct {
 
 type BackblazeBucketInfoPayload struct {
 	Buckets []BackblazeBucketInfo `json:"buckets"`
+}
+
+type BackblazeUploadInfo struct {
+	UploadUrl string `json:"uploadUrl"`
+	AuthToken string `json:"authorizationToken"`
 }
 
 // Call Backblaze API endpoint to authorize and gather facts.
@@ -183,7 +190,66 @@ func (bp *BackblazeProvider) ViewFile(path string, w io.Writer) {
 	}
 }
 
-func (bp *BackblazeProvider) SaveFile(contents []byte, path string) bool {
+func (bp *BackblazeProvider) SaveFile(file multipart.File, handler *multipart.FileHeader, path string) bool {
+	client := &http.Client{}
+	bucketIdPayload := fmt.Sprintf(`{"bucketId": "%s"}`, bp.Bucket)
+
+	req, err := http.NewRequest("POST", bp.Location + "/b2api/v2/b2_get_upload_url",
+		bytes.NewBuffer([]byte(bucketIdPayload)))
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	req.Header.Add("Authorization", bp.Authentication)
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	bucketData, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+
+	var data BackblazeUploadInfo
+	json.Unmarshal(bucketData, &data)
+
+	req, err = http.NewRequest("POST",
+		data.UploadUrl,
+		file,
+	)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	// Read the content
+	var bodyBytes []byte
+	if req.Body != nil {
+		bodyBytes, _ = ioutil.ReadAll(req.Body)
+	}
+	req.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	// Calculate SHA1 and add required headers.
+	fileSha := sha1.New()
+	fileSha.Write(bodyBytes)
+
+	req.Header.Add("Authorization", data.AuthToken)
+	req.Header.Add("X-Bz-File-Name", handler.Filename)
+	req.Header.Add("Content-Type", "b2/x-auto")
+	req.Header.Add("X-Bz-Content-Sha1", fmt.Sprintf("%x", fileSha.Sum(nil)))
+	req.ContentLength = handler.Size
+
+	// Upload in background.
+	go func() {
+		res, err = client.Do(req)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}()
+
 	return true
 }
 

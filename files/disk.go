@@ -1,8 +1,10 @@
 package files
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"os"
 	"strings"
 )
@@ -53,11 +55,15 @@ func (dp *DiskProvider) ViewFile(path string, w io.Writer) {
 	}
 }
 
-func (dp *DiskProvider) SaveFile(contents []byte, path string) bool {
-	err := ioutil.WriteFile(path, contents, 0600)
+func (dp *DiskProvider) SaveFile(file multipart.File, handler *multipart.FileHeader, path string) bool {
+	f, err := os.OpenFile(dp.Location + path + "/" + handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
+		fmt.Println(err.Error())
 		return false
 	}
+	defer f.Close()
+
+	io.Copy(f, file)
 	return true
 }
 
