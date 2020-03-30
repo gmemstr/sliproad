@@ -1,0 +1,5 @@
+# The disk provider is the most basic of providers, requiring only a path on disk to write and retrieve files to and
+# from.
+disk:
+  provider: disk
+  path: /tmp/nas # This is only used for the `disk` provider right now, and indicates where to manage files.

@@ -1,0 +1,9 @@
+# The Backblaze provider requires an application key, application key ID, and bucket ID to use.
+# You can find steps for generating there here: https://www.backblaze.com/b2/docs/application_keys.html
+# Keys should have at least the listBuckets, readFiles, writeFiles and shareFiles permissions for a bucket.
+backblaze:
+  provider: backblaze
+  config: # Provider-specific files.
+    applicationKeyId: aaaaaaaaaaaa
+    applicationKey: aaaaaaaaaaaa
+    bucket: aaaaaaaaaaaa
