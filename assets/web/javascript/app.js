@@ -3,6 +3,7 @@ window.addEventListener("hashchange", router, false);
 router()
 let input = ""
 
+// Fetch file listing for a provider and optional path.
 function getFileListing(provider, path = "") {
   fetch(`/api/files/${provider}${path}`)
     .then((response) => {
@@ -14,6 +15,7 @@ function getFileListing(provider, path = "") {
       <form action="#" method="post">
         <input type="file" id="file" data-dir="${provider}${path}"><label for="file">Upload</label>
       </form>
+      <progress id="progress" value="0" max="100" hidden=""></progress>
       <div class="grid-sm">
         ${files.map(file =>
           `<a href="${!file.IsDirectory ? `/api/files/${provider}${path}/${file.Name}` : `#${provider}/${path !== "" ? path.replace("/","") + "/" : ""}${file.Name}`}">
@@ -23,12 +25,13 @@ function getFileListing(provider, path = "") {
         ).join('')}
       </div>
       `
-
+      // Register our new listeners for uploading files.
       input = document.getElementById("file")
       input.addEventListener("change", onSelectFile, false)
     })
 }
 
+// Fetch list of providers and render.
 function getProviders() {
   fetch(`/api/providers`)
     .then((response) => {
@@ -49,6 +52,7 @@ function getProviders() {
     })
 }
 
+// Dumb router function for passing around values from the hash.
 function router(event = null) {
   let hash = location.hash.replace("#", "")
   // If hash is empty, "redirect" to index.
@@ -63,19 +67,33 @@ function router(event = null) {
   getFileListing(provider, "/" + path)
 }
 
+// File upload functions. Uses XMLHttpRequest so we can display file upload progress.
 function onSelectFile() {
   upload(input.getAttribute("data-dir"), input.files[0])
 }
 function upload(path, file) {
+  let xhrObj = new XMLHttpRequest()
   let formData = new FormData()
   formData.append("file", file)
-  fetch(`/api/files/${path}`, {
-    method: "POST",
-    body: formData
-  }).then(response => response.text())
-    .then(text => console.log(text))
-    .then(router())
+
+  xhrObj.upload.addEventListener("loadstart", uploadStarted, false)
+  xhrObj.upload.addEventListener("progress", uploadProgress, false)
+  xhrObj.upload.addEventListener("load", uploadFinish, false)
+  xhrObj.open("POST", `/api/files/${path}`, true)
+
+  xhrObj.send(formData);
 }
+
+function uploadStarted(e) {
+  document.getElementById("progress").hidden = false
+}
+function uploadProgress(e) {
+  let progressBar = document.getElementById("progress")
+  progressBar.max = e.total
+  progressBar.value = e.loaded
+}
+
+function uploadFinish(e) { router() }
 
 // Tagged template function for parsing a string of text as HTML objects
 // <3 @innovati for this brilliance.
