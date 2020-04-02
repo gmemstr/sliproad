@@ -7,12 +7,12 @@ var Providers map[string]*FileProviderInterface
 
 func TranslateProvider(codename string, i *FileProviderInterface) {
 	provider := ProviderConfig[codename]
-	if codename == "disk" {
+	if provider.Provider == "disk" {
 		*i = &DiskProvider{provider,}
 		return
 	}
 
-	if codename == "backblaze" {
+	if provider.Provider == "backblaze" {
 		bbProv := &BackblazeProvider{provider, provider.Config["bucket"], ""}
 		*i = bbProv
 		return

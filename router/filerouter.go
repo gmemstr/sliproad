@@ -12,7 +12,6 @@ import (
 )
 
 func HandleProvider() common.Handler {
-
 	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
 		vars := mux.Vars(r)
 		if r.Method == "GET" {
@@ -66,7 +65,6 @@ func HandleProvider() common.Handler {
 }
 
 func ListProviders() common.Handler {
-
 	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
 		var providers []string
 		for v, _ := range files.ProviderConfig {

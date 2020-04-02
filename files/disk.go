@@ -63,7 +63,11 @@ func (dp *DiskProvider) SaveFile(file multipart.File, handler *multipart.FileHea
 	}
 	defer f.Close()
 
-	io.Copy(f, file)
+	_, err = io.Copy(f, file)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
 	return true
 }
 

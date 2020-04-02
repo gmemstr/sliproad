@@ -214,13 +214,16 @@ func (bp *BackblazeProvider) SaveFile(file multipart.File, handler *multipart.Fi
 	}
 
 	var data BackblazeUploadInfo
-	json.Unmarshal(bucketData, &data)
+	err = json.Unmarshal(bucketData, &data)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
 
 	req, err = http.NewRequest("POST",
 		data.UploadUrl,
 		file,
 	)
-
 	if err != nil {
 		fmt.Println(err.Error())
 		return false
@@ -243,12 +246,11 @@ func (bp *BackblazeProvider) SaveFile(file multipart.File, handler *multipart.Fi
 	req.ContentLength = handler.Size
 
 	// Upload in background.
-	go func() {
-		res, err = client.Do(req)
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-	}()
+	res, err = client.Do(req)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
 
 	return true
 }
