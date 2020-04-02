@@ -3,7 +3,6 @@ package router
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gmemstr/nas/common"
 	"github.com/gmemstr/nas/files"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -11,20 +10,22 @@ import (
 	"strings"
 )
 
-func HandleProvider() common.Handler {
-	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
+func HandleProvider() Handler {
+	return func(context *Context, w http.ResponseWriter, r *http.Request) *HTTPError {
 		vars := mux.Vars(r)
-		if r.Method == "GET" {
-			providerCodename := vars["provider"]
-			providerCodename = strings.Replace(providerCodename, "/", "", -1)
-			provider := *files.Providers[providerCodename]
+		providerCodename := vars["provider"]
+		providerCodename = strings.Replace(providerCodename, "/", "", -1)
+		provider := *files.Providers[providerCodename]
 
+		if r.Method == "GET" {
 			fileList := provider.GetDirectory("")
 			if vars["file"] != "" {
 				fileType := provider.DetermineType(vars["file"])
 				if fileType == "" {
-					w.Write([]byte("file not found"))
-					return nil
+					return &HTTPError{
+						Message:    fmt.Sprintf("error determining filetype for %s\n", vars["file"]),
+						StatusCode: http.StatusInternalServerError,
+					}
 				}
 				if fileType == "file" {
 					provider.ViewFile(vars["file"], w)
@@ -34,28 +35,31 @@ func HandleProvider() common.Handler {
 			}
 			data, err := json.Marshal(fileList)
 			if err != nil {
-				w.Write([]byte("An error occurred"))
-				return nil
+				return &HTTPError{
+					Message:    fmt.Sprintf("error fetching filelisting for %s\n", vars["file"]),
+					StatusCode: http.StatusInternalServerError,
+				}
 			}
 			w.Write(data)
 		}
+
 		if r.Method == "POST" {
-			providerCodename := vars["provider"]
-			providerCodename = strings.Replace(providerCodename, "/", "", -1)
-			provider := *files.Providers[providerCodename]
 			err := r.ParseMultipartForm(32 << 20)
 			if err != nil {
-				w.Write([]byte("unable to parse form"))
-				fmt.Println(err.Error())
-				return nil
+				return &HTTPError{
+					Message:    fmt.Sprintf("error parsing form for %s\n", vars["file"]),
+					StatusCode: http.StatusInternalServerError,
+				}
 			}
 			file, handler, err := r.FormFile("file")
 			defer file.Close()
 
 			success := provider.SaveFile(file, handler, vars["file"])
 			if !success {
-				w.Write([]byte("unable to save file"))
-				return nil
+				return &HTTPError{
+					Message:    fmt.Sprintf("error saving file %s\n", vars["file"]),
+					StatusCode: http.StatusInternalServerError,
+				}
 			}
 			w.Write([]byte("saved file"))
 		}
@@ -64,8 +68,8 @@ func HandleProvider() common.Handler {
 	}
 }
 
-func ListProviders() common.Handler {
-	return func(rc *common.RouterContext, w http.ResponseWriter, r *http.Request) *common.HTTPError {
+func ListProviders() Handler {
+	return func(context *Context, w http.ResponseWriter, r *http.Request) *HTTPError {
 		var providers []string
 		for v, _ := range files.ProviderConfig {
 			providers = append(providers, v)
@@ -73,7 +77,10 @@ func ListProviders() common.Handler {
 		sort.Strings(providers)
 		data, err := json.Marshal(providers)
 		if err != nil {
-			return nil
+			return &HTTPError{
+				Message:    fmt.Sprintf("error provider listing"),
+				StatusCode: http.StatusInternalServerError,
+			}
 		}
 		w.Write(data)
 		return nil
