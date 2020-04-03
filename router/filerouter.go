@@ -6,6 +6,7 @@ import (
 	"github.com/gmemstr/nas/files"
 	"github.com/gorilla/mux"
 	"net/http"
+	"net/url"
 	"sort"
 	"strings"
 )
@@ -20,18 +21,25 @@ func HandleProvider() Handler {
 		if r.Method == "GET" {
 			fileList := provider.GetDirectory("")
 			if vars["file"] != "" {
-				fileType := provider.DetermineType(vars["file"])
+				filename, err := url.QueryUnescape(vars["file"])
+				if err != nil {
+					return &HTTPError{
+						Message:    fmt.Sprintf("error determining filetype for %s\n", filename),
+						StatusCode: http.StatusInternalServerError,
+					}
+				}
+				fileType := provider.DetermineType(filename)
 				if fileType == "" {
 					return &HTTPError{
-						Message:    fmt.Sprintf("error determining filetype for %s\n", vars["file"]),
+						Message:    fmt.Sprintf("error determining filetype for %s\n", filename),
 						StatusCode: http.StatusInternalServerError,
 					}
 				}
 				if fileType == "file" {
-					provider.ViewFile(vars["file"], w)
+					provider.ViewFile(filename, w)
 					return nil
 				}
-				fileList = provider.GetDirectory(vars["file"])
+				fileList = provider.GetDirectory(filename)
 			}
 			data, err := json.Marshal(fileList)
 			if err != nil {
