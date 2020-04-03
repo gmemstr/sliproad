@@ -5,21 +5,29 @@ let input = ""
 
 // Fetch file listing for a provider and optional path.
 function getFileListing(provider, path = "") {
+  // There is some funky behaviour happening here between localhost and a deployed instance.
+  // This *fixes* is, but it's not ideal.
+  if (!path.startsWith("/") && path !== "") {
+    path = "/" + path
+  }
   fetch(`/api/files/${provider}${path}`)
     .then((response) => {
       return response.json()
     })
     .then((data) => {
       let files = data["Files"]
+      if (!files) {
+        files = []
+      }
       html`
       <form action="#" method="post">
-        <input type="file" id="file" data-dir="${provider}/${path}"><label for="file">Upload</label>
+        <input type="file" id="file" data-dir="${provider}${path}"><label for="file">Upload</label>
+        <progress id="progress" value="0" max="100" hidden=""></progress>
       </form>
-      <progress id="progress" value="0" max="100" hidden=""></progress>
-      <div class="grid-sm">
+      <div class="list">
         ${files.map(file =>
-          `<a href="${!file.IsDirectory ? `/api/files/${provider}/${path}/${file.Name}` : `#${provider}${path === "" ? "" : "/" + path}/${file.Name}`}">
-            ${file.Name}${file.IsDirectory ? '/' : ''}
+          `<a class="${file.IsDirectory ? "directory" : "file"}" href="${!file.IsDirectory ? `/api/files/${provider}${path}/${file.Name}` : `#${provider}${path === "" ? "" : path}/${file.Name}`}">
+            <span>${file.Name}${file.IsDirectory ? '/' : ''}</span>
           </a>
           `
         ).join('')}

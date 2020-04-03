@@ -1,9 +1,21 @@
-body {
-    font-family: sans-serif;
-    color: black;
+:root {
+    /* https://coolors.co/fe4a49-fed766-009fb7-e6e6ea-f4f4f8 */
+    --orange: rgba(254, 74, 73, 1);
+    --yellow: rgba(254, 215, 102, 1);
+    --blue: rgba(0, 159, 183, 1);
+    --platinum: rgba(230, 230, 234, 1);
+    --white: rgba(244, 244, 248, 1);
+
+    --desktop-width: 1170px;
 }
 
-.grid-lg, .grid-sm {
+body, h1 a {
+    font-family: sans-serif;
+    color: var(--orange);
+    background-color: var(--white);
+}
+
+.grid-lg {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     grid-template-rows: repeat(5, 2fr);
@@ -15,64 +27,87 @@ body {
     display: flex;
     padding: 10vh;
     justify-content: center;
-    background-color: black;
     font-size: 32px;
     font-weight: bold;
     text-decoration: none;
     transition: background-color 0.5s;
+    background-color: var(--blue);
 }
 
-.grid-sm a {
+.list {
+    width: 40%;
+    margin: 0 auto;
     display: flex;
-    padding: 2vh;
-    justify-content: center;
-    background-color: black;
+    flex-direction: column;
+}
+
+.list a {
+    padding: 1.5vh;
     font-size: 24px;
     font-weight: bold;
     text-decoration: none;
+    text-align: center;
     transition: background-color 0.5s;
+    -ms-word-wrap: anywhere;
+    word-wrap: anywhere;
+}
+
+.list a.file {
+    background-color: var(--orange);
+}
+
+.list a.directory {
+    background-color: var(--blue);
 }
 
 .grid-lg a:visited, .grid-lg a,
-.grid-sm a:visited, .grid-sm a {
+.list a:visited, .list a {
     color: white;
 }
 .grid-lg a:hover,
-.grid-sm a:hover {
-    color: white;
-    background-color: darkgray;
-    transition: background-color 0.5s;
+.list a.directory:hover {
+    color: var(--blue);
+    background-color: var(--platinum);
+    transition: background-color 0.5s, color 0.5s;
+}
+.list a.file:hover {
+    color: var(--orange);
+    background-color: var(--platinum);
+    transition: background-color 0.5s, color 0.5s;
 }
 
 @media (prefers-color-scheme: dark) {
-    body { background-color: black; color: white; }
-    .grid-lg a, .grid-sm a {
-        background-color: white;
+    body { background-color: black; }
+    .grid-lg a {
         color: black;
     }
-    .grid-lg a:visited, .grid-lg a,
-    .grid-sm a:visited, .grid-sm a {
+    .grid-lg a:visited, .grid-lg a {
         color: black
     }
-    .grid-lg a:hover,
-    .grid-sm a:hover {
+    .grid-lg a:hover {
         color: lightgray;
         background-color: darkgray;
         transition: background-color 0.5s;
     }
 }
 
-@media only screen and (max-width: 700px) {
-    .grid-lg, .grid-sm {
+form {
+    margin: 0 auto;
+    width: 40%;
+}
+
+@media only screen and (max-width: 1170px) {
+    .grid-lg {
         display: block;
     }
-    .grid-lg a, .grid-sm a {
+    .grid-lg a {
         margin: 10px;
     }
-}
-@media only screen and (min-width: 1921px) {
-    .grid-lg, .grid-sm {
-        grid-template-columns: repeat(5, 1fr);
+    .list, form {
+        width: 90%;
+    }
+    .list a img {
+        display: none;
     }
 }
 
@@ -86,14 +121,32 @@ input[type="file"] {
 }
 
 input[type="file"]  + label {
+    padding: 10px;
     font-size: 1.25em;
     font-weight: 700;
-    color: white;
-    background-color: black;
+    color: var(--desktop-width);
+    background-color: var(--yellow);
     display: inline-block;
+    border: 2px solid var(--orange);
+    border-radius: 5px 5px 0 0;
+    border-bottom: none;
 }
 
 input[type="file"]:focus + label,
 input[type="file"]  + label:hover {
-    background-color: red;
+    background-color: var(--platinum);
+}
+
+progress {
+    background: var(--platinum);
+    border: 1px solid var(--orange);
+}
+progress::-webkit-progress-bar {
+    background: var(--orange);
+}
+progress::-webkit-progress-value {
+    background: var(--orange);
+}
+progress::-moz-progress-bar {
+    background: var(--orange);
 }
