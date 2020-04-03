@@ -13,12 +13,12 @@ function getFileListing(provider, path = "") {
       let files = data["Files"]
       html`
       <form action="#" method="post">
-        <input type="file" id="file" data-dir="${provider}${path}"><label for="file">Upload</label>
+        <input type="file" id="file" data-dir="${provider}/${path}"><label for="file">Upload</label>
       </form>
       <progress id="progress" value="0" max="100" hidden=""></progress>
       <div class="grid-sm">
         ${files.map(file =>
-          `<a href="${!file.IsDirectory ? `/api/files/${provider}${path}/${file.Name}` : `#${provider}/${path !== "" ? path.replace("/","") + "/" : ""}${file.Name}`}">
+          `<a href="${!file.IsDirectory ? `/api/files/${provider}/${path}/${file.Name}` : `#${provider}${path === "" ? "" : "/" + path}/${file.Name}`}">
             ${file.Name}${file.IsDirectory ? '/' : ''}
           </a>
           `
@@ -64,7 +64,7 @@ function router(event = null) {
   let path = hash.split("/")
   let provider = path.shift()
   path = path.join("/")
-  getFileListing(provider, "/" + path)
+  getFileListing(provider, path)
 }
 
 // File upload functions. Uses XMLHttpRequest so we can display file upload progress.

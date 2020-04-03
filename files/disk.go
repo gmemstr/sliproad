@@ -56,7 +56,8 @@ func (dp *DiskProvider) ViewFile(path string, w io.Writer) {
 }
 
 func (dp *DiskProvider) SaveFile(file multipart.File, handler *multipart.FileHeader, path string) bool {
-	f, err := os.OpenFile(dp.Location + path + "/" + handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+	filename := strings.Join([]string{dp.Location,path,handler.Filename}, "/")
+	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		fmt.Println(err.Error())
 		return false

@@ -256,9 +256,6 @@ func (bp *BackblazeProvider) SaveFile(file multipart.File, handler *multipart.Fi
 }
 
 func (bp *BackblazeProvider) DetermineType(path string) string {
+	// TODO: Implement directory support for B2.
 	return "file"
-}
-
-func (bp *BackblazeProvider) GetProviderConfig() FileProvider {
-	return ProviderConfig[bp.Name]
 }
