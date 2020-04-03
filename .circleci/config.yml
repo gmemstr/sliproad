@@ -25,7 +25,7 @@ jobs:
       - run:
           command: make dist
       - store_artifacts:
-          path: /go/src/github.com/gmemstr/build
+          path: build
       - save_cache:
           key: go-mod-{{ checksum "go.sum" }}-v1
           paths:
