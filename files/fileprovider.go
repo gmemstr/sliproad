@@ -2,7 +2,6 @@ package files
 
 import (
 	"io"
-	"mime/multipart"
 )
 
 type FileProvider struct {
@@ -33,7 +32,7 @@ type FileProviderInterface interface {
 	Setup(args map[string]string) bool
 	GetDirectory(path string) Directory
 	ViewFile(path string, w io.Writer)
-	SaveFile(file multipart.File, handler *multipart.FileHeader, path string) bool
+	SaveFile(file io.Reader, filename string, path string) bool
 	DetermineType(path string) string
 }
 
@@ -50,7 +49,7 @@ func (f FileProvider) ViewFile(path string, w io.Writer) {
 	return
 }
 
-func (f FileProvider) SaveFile(file multipart.File, handler *multipart.FileHeader, path string) bool {
+func (f FileProvider) SaveFile(file io.Reader, filename string, path string) bool {
 	return false
 }
 

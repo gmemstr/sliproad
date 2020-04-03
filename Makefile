@@ -4,15 +4,22 @@ build:
 	go build
 
 pi:
-	env GOOS=linux GOARCH=arm GOARM=5 go build
+	env GOOS=linux GOARCH=arm GOARM=5 go build -o nas-pi
 
 small:
 	go build -ldflags="-s -w"
 	upx --brute nas
 
 small_pi:
-	env GOOS=linux GOARCH=arm GOARM=5 go build -ldflags="-s -w"
-	upx --brute nas
+	env GOOS=linux GOARCH=arm GOARM=5 go build -o nas-arm -ldflags="-s -w"
+	upx --brute nas-arm
 
 run:
 	go run webserver.go
+
+test:
+	go test ./... -cover
+
+dist: small small_pi
+	mkdir build
+	mv nas* build

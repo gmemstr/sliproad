@@ -19,6 +19,7 @@ providers.yml
 
 # Binary
 nas
+build/
 
 *.db
 .lock

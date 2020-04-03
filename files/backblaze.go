@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"mime/multipart"
 	"net/http"
 	"strings"
 )
@@ -190,7 +189,7 @@ func (bp *BackblazeProvider) ViewFile(path string, w io.Writer) {
 	}
 }
 
-func (bp *BackblazeProvider) SaveFile(file multipart.File, handler *multipart.FileHeader, path string) bool {
+func (bp *BackblazeProvider) SaveFile(file io.Reader, filename string, path string) bool {
 	client := &http.Client{}
 	bucketIdPayload := fmt.Sprintf(`{"bucketId": "%s"}`, bp.Bucket)
 
@@ -240,10 +239,10 @@ func (bp *BackblazeProvider) SaveFile(file multipart.File, handler *multipart.Fi
 	fileSha.Write(bodyBytes)
 
 	req.Header.Add("Authorization", data.AuthToken)
-	req.Header.Add("X-Bz-File-Name", handler.Filename)
+	req.Header.Add("X-Bz-File-Name", filename)
 	req.Header.Add("Content-Type", "b2/x-auto")
 	req.Header.Add("X-Bz-Content-Sha1", fmt.Sprintf("%x", fileSha.Sum(nil)))
-	req.ContentLength = handler.Size
+	req.ContentLength = int64(len(bodyBytes))
 
 	// Upload in background.
 	res, err = client.Do(req)

@@ -54,7 +54,7 @@ func HandleProvider() Handler {
 			file, handler, err := r.FormFile("file")
 			defer file.Close()
 
-			success := provider.SaveFile(file, handler, vars["file"])
+			success := provider.SaveFile(file, handler.Filename, vars["file"])
 			if !success {
 				return &HTTPError{
 					Message:    fmt.Sprintf("error saving file %s\n", vars["file"]),

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"mime/multipart"
 	"os"
 	"strings"
 )
@@ -55,9 +54,9 @@ func (dp *DiskProvider) ViewFile(path string, w io.Writer) {
 	}
 }
 
-func (dp *DiskProvider) SaveFile(file multipart.File, handler *multipart.FileHeader, path string) bool {
-	filename := strings.Join([]string{dp.Location,path,handler.Filename}, "/")
-	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0666)
+func (dp *DiskProvider) SaveFile(file io.Reader, filename string, path string) bool {
+	fullPath := strings.Join([]string{dp.Location,path,filename}, "/")
+	f, err := os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		fmt.Println(err.Error())
 		return false
