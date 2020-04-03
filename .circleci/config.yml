@@ -1,4 +1,4 @@
-version: 2.1
+version: 2
 jobs:
   build:
     docker:
@@ -7,12 +7,12 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - go-mod-{{ checksum "go.sum" }}-v1
+            - go-mod-{{ checksum "go.sum" }}-v2
             - go-mod-{{ checksum "go.sum" }}
             - go-mod
       - restore_cache:
           keys:
-            - upx-3.96
+            - upx-3.96-v2
       - run:
           name: Install UPX
           command: |
@@ -29,11 +29,11 @@ jobs:
       - store_artifacts:
           path: build
       - save_cache:
-          key: go-mod-{{ checksum "go.sum" }}-v1
+          key: go-mod-{{ checksum "go.sum" }}-v2
           paths:
-            - /go/pkg/mod
+            - /home/circleci/go/pkg/mod
       - save_cache:
-          key: upx-3.96
+          key: upx-3.96-v2
           paths:
             - /home/circleci/upx
   test:
@@ -43,7 +43,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - go-mod-{{ checksum "go.sum" }}-v1
+            - go-mod-{{ checksum "go.sum" }}-v2
             - go-mod-{{ checksum "go.sum" }}
             - go-mod
       - run:
