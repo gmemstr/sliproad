@@ -16,11 +16,13 @@ jobs:
       - run:
           name: Install UPX
           command: |
+            echo 'export PATH=$PATH:/home/circleci/upx/bin' >> $BASH_ENV
             if ! type "upx" > /dev/null; then
               wget https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz
               tar xf upx-3.96-amd64_linux.tar.xz
-              sudo mv upx-3.96-amd64_linux/upx /usr/local/bin
-              chmod +x /usr/local/bin/upx
+              mkdir -p /home/circleci/upx/bin
+              mv upx-3.96-amd64_linux/upx /home/circleci/upx/bin
+              chmod +x /home/circleci/upx/bin/upx
             fi
       - run:
           command: make dist
@@ -33,7 +35,7 @@ jobs:
       - save_cache:
           key: upx-3.96
           paths:
-            - /usr/local/bin/upx
+            - /home/circleci/upx
   test:
     docker:
       - image: cimg/go:1.14
