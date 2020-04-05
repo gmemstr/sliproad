@@ -43,6 +43,7 @@ func Init() *mux.Router {
 	// "Static" paths
 	r.PathPrefix("/javascript/").Handler(http.StripPrefix("/javascript/", http.FileServer(http.Dir("assets/web/javascript"))))
 	r.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("assets/web/css"))))
+	r.PathPrefix("/icons/").Handler(http.StripPrefix("/icons/", http.FileServer(http.Dir("assets/web/icons"))))
 
 	// Paths that require specific handlers
 	r.Handle("/", Handle(

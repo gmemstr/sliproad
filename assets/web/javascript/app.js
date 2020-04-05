@@ -27,7 +27,7 @@ function getFileListing(provider, path = "") {
       <div class="list">
         ${files.map(file =>
           `<a class="${file.IsDirectory ? "directory" : "file"}" href="${!file.IsDirectory ? `/api/files/${provider}${path}/${file.Name}` : `#${provider}${path === "" ? "" : path}/${file.Name}`}">
-            <span>${file.Name}${file.IsDirectory ? '/' : ''}</span>
+            <span>${file.IsDirectory ? '<img src="/icons/folder.svg"/>' : '<img src="/icons/file.svg"/>'}${file.Name}</span>
           </a>
           `
         ).join('')}

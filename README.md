@@ -62,3 +62,7 @@ you can find a full configuration file under `assets/config_examples/providers.y
 
 custom file providers can be implemented by adding a new go file to the `files` module. it should
 implement the `FileProviderInterface` interface.
+
+## icons
+
+SVG Icons provided by Paweł Kuna: https://github.com/tabler/tabler-icons (see assets/web/icons/README.md)

@@ -42,7 +42,7 @@ body, h1 a {
 }
 
 .list a {
-    padding: 1.5vh;
+    padding: 1vh;
     font-size: 24px;
     font-weight: bold;
     text-decoration: none;
@@ -50,6 +50,15 @@ body, h1 a {
     transition: background-color 0.5s;
     -ms-word-wrap: anywhere;
     word-wrap: anywhere;
+    margin: 5px 0;
+    position: relative;
+    border-radius: 5px;
+}
+
+.list a img {
+    left: 1vw;
+    top: 1vh;
+    position: absolute;
 }
 
 .list a.file {
@@ -62,7 +71,7 @@ body, h1 a {
 
 .grid-lg a:visited, .grid-lg a,
 .list a:visited, .list a {
-    color: white;
+    color: var(--white);
 }
 .grid-lg a:hover,
 .list a.directory:hover {
@@ -77,7 +86,7 @@ body, h1 a {
 }
 
 @media (prefers-color-scheme: dark) {
-    body { background-color: black; }
+    body, h1 a { background-color: black; }
     .grid-lg a {
         color: black;
     }
@@ -124,17 +133,17 @@ input[type="file"]  + label {
     padding: 10px;
     font-size: 1.25em;
     font-weight: 700;
-    color: var(--desktop-width);
-    background-color: var(--yellow);
     display: inline-block;
     border: 2px solid var(--orange);
-    border-radius: 5px 5px 0 0;
-    border-bottom: none;
+    border-radius: 5px;
+    transition: background-color 0.5s, color 0.5s;
 }
 
 input[type="file"]:focus + label,
 input[type="file"]  + label:hover {
-    background-color: var(--platinum);
+    background-color: var(--orange);
+    color: var(--white);
+    transition: background-color 0.5s, color 0.5s;
 }
 
 progress {

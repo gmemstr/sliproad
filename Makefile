@@ -4,7 +4,7 @@ build:
 	go build
 
 pi:
-	env GOOS=linux GOARCH=arm GOARM=5 go build -o nas-pi
+	env GOOS=linux GOARCH=arm GOARM=5 go build -o nas-arm
 
 small:
 	go build -ldflags="-s -w"
