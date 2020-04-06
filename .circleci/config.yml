@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  upx: gmem/upx@1.0.1
 jobs:
   build:
     docker:
@@ -10,20 +12,7 @@ jobs:
             - go-mod-{{ checksum "go.sum" }}-v2
             - go-mod-{{ checksum "go.sum" }}
             - go-mod
-      - restore_cache:
-          keys:
-            - upx-3.96-v2
-      - run:
-          name: Install UPX
-          command: |
-            echo 'export PATH=$PATH:/home/circleci/upx/bin' >> $BASH_ENV
-            if ! type "upx" > /dev/null; then
-              wget https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz
-              tar xf upx-3.96-amd64_linux.tar.xz
-              mkdir -p /home/circleci/upx/bin
-              mv upx-3.96-amd64_linux/upx /home/circleci/upx/bin
-              chmod +x /home/circleci/upx/bin/upx
-            fi
+      - upx/install
       - run:
           command: make dist
       - store_artifacts:
@@ -32,10 +21,6 @@ jobs:
           key: go-mod-{{ checksum "go.sum" }}-v2
           paths:
             - /home/circleci/go/pkg/mod
-      - save_cache:
-          key: upx-3.96-v2
-          paths:
-            - /home/circleci/upx
   test:
     docker:
       - image: cimg/go:1.14
