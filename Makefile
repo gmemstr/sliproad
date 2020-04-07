@@ -1,5 +1,7 @@
 .DEFAULT_GOAL := build
 NAS_VERSION := 2.0.0
+# Workaround for CircleCI Docker image and mkdir.
+SHELL := /bin/bash
 
 make_build_dir:
 	mkdir -p build/{bin,assets,tars}
