@@ -58,7 +58,7 @@ func Init() *mux.Router {
 		HandleProvider(),
 	)).Methods("GET", "POST")
 
-	r.Handle(`/api/files/{provider:[a-zA-Z0-9]+}/{file:[a-zA-Z0-9=\-\/\s.,&_+]+}`, Handle(
+	r.Handle(`/api/files/{provider:[a-zA-Z0-9]+}/{file:.+}`, Handle(
 		HandleProvider(),
 	)).Methods("GET", "POST")
 
