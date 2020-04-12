@@ -18,6 +18,7 @@ func HandleProvider() Handler {
 		providerCodename = strings.Replace(providerCodename, "/", "", -1)
 		provider := *files.Providers[providerCodename]
 
+		// Directory listing or serve file.
 		if r.Method == "GET" {
 			fileList := provider.GetDirectory("")
 			if vars["file"] != "" {
@@ -51,28 +52,57 @@ func HandleProvider() Handler {
 			w.Write(data)
 		}
 
+		// File upload or directory creation.
 		if r.Method == "POST" {
-			err := r.ParseMultipartForm(32 << 20)
-			if err != nil {
-				return &HTTPError{
-					Message:    fmt.Sprintf("error parsing form for %s\n", vars["file"]),
-					StatusCode: http.StatusInternalServerError,
-				}
-			}
-			file, handler, err := r.FormFile("file")
-			defer file.Close()
+			xType := r.Header.Get("X-NAS-Type")
 
-			success := provider.SaveFile(file, handler.Filename, vars["file"])
-			if !success {
-				return &HTTPError{
-					Message:    fmt.Sprintf("error saving file %s\n", vars["file"]),
-					StatusCode: http.StatusInternalServerError,
+			if xType == "file" || xType == ""{
+				err := r.ParseMultipartForm(32 << 20)
+				if err != nil {
+					return &HTTPError{
+						Message:    fmt.Sprintf("error parsing form for %s\n", vars["file"]),
+						StatusCode: http.StatusInternalServerError,
+					}
 				}
+				file, handler, err := r.FormFile("file")
+				defer file.Close()
+
+				success := provider.SaveFile(file, handler.Filename, vars["file"])
+				if !success {
+					return &HTTPError{
+						Message:    fmt.Sprintf("error saving file %s\n", vars["file"]),
+						StatusCode: http.StatusInternalServerError,
+					}
+				}
+				w.Write([]byte("saved file"))
 			}
-			w.Write([]byte("saved file"))
+			if xType == "directory" {
+				dirname := vars["file"]
+				success := provider.CreateDirectory(dirname)
+				if !success {
+					return &HTTPError{
+						Message:    fmt.Sprintf("error creating directory %s\n", dirname),
+						StatusCode: http.StatusInternalServerError,
+					}
+				}
+				_, _ = w.Write([]byte("created directory"))
+			}
 		}
 
-		return nil
+		// Delete file.
+		if r.Method == "DELETE" {
+			path := vars["file"]
+			success := provider.Delete(path)
+			if !success {
+				return &HTTPError{
+					Message:    fmt.Sprintf("error deleting %s\n", path),
+					StatusCode: http.StatusInternalServerError,
+				}
+			}
+			_, _ = w.Write([]byte("deleted"))
+		}
+
+			return nil
 	}
 }
 

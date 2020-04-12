@@ -34,6 +34,8 @@ type FileProviderInterface interface {
 	ViewFile(path string, w io.Writer)
 	SaveFile(file io.Reader, filename string, path string) bool
 	DetermineType(path string) string
+	CreateDirectory(path string) bool
+	Delete(path string) bool
 }
 
 /** DO NOT USE THESE DEFAULTS **/
@@ -55,5 +57,13 @@ func (f FileProvider) SaveFile(file io.Reader, filename string, path string) boo
 
 func (f FileProvider) DetermineType(path string) string {
 	return ""
+}
+
+func (f FileProvider) CreateDirectory(path string) bool {
+	return false
+}
+
+func (f FileProvider) Delete(path string) bool {
+	return false
 }
 

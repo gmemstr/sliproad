@@ -52,7 +52,9 @@ body, h1 a {
     word-wrap: anywhere;
     margin: 5px 0;
     position: relative;
-    border-radius: 5px;
+    border-radius: 5px 0 0 5px;
+    display: inline-block;
+    width: 93%;
 }
 
 .list a img {
@@ -100,9 +102,14 @@ body, h1 a {
     }
 }
 
-form {
+.forms {
     margin: 0 auto;
     width: 40%;
+}
+
+form {
+    display: inline-block;
+    width: 30%;
 }
 
 @media only screen and (max-width: 1170px) {
@@ -129,7 +136,8 @@ input[type="file"] {
     z-index: -1;
 }
 
-input[type="file"]  + label {
+input[type="file"]  + label, input[type="submit"], button {
+    color: var(--orange);
     padding: 10px;
     font-size: 1.25em;
     font-weight: 700;
@@ -139,8 +147,21 @@ input[type="file"]  + label {
     transition: background-color 0.5s, color 0.5s;
 }
 
+input[type="text"] {
+    padding: 10px;
+    font-size: 1.25em;
+    font-weight: 500;
+    display: inline-block;
+    border: 2px solid var(--orange);
+    border-radius: 5px;
+    transition: background-color 0.5s, color 0.5s;
+    width: 50%;
+}
+
 input[type="file"]:focus + label,
-input[type="file"]  + label:hover {
+input[type="file"]  + label:hover,
+input[type="submit"]:hover,
+button:hover {
     background-color: var(--orange);
     color: var(--white);
     transition: background-color 0.5s, color 0.5s;
@@ -158,4 +179,28 @@ progress::-webkit-progress-value {
 }
 progress::-moz-progress-bar {
     background: var(--orange);
+}
+
+button {
+    padding: 1vh;
+    font-size: 24px;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    transition: background-color 0.5s;
+    margin: 5px 0;
+    position: relative;
+    border-radius: 0 5px 5px 0;
+}
+
+.directory ~ button {
+    border-color: var(--blue);
+}
+.directory ~ button:hover {
+    background-color: var(--blue);
+}
+
+.item {
+    display: flex;
+    justify-content: center;
 }

@@ -15,11 +15,11 @@ func main() {
 	// Initialize file providers.
 	file, err := ioutil.ReadFile("providers.yml")
 	if err != nil {
-		panic(err)
+		fmt.Println("Unable to read providers.yml file, does it exist?")
 	}
 	err = yaml.Unmarshal(file, &files.ProviderConfig)
 	if err != nil {
-		panic(err)
+		fmt.Println("Unable to parse providers.yml file, is it correct?")
 	}
 	files.SetupProviders()
 

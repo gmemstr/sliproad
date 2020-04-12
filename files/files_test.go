@@ -36,6 +36,14 @@ func TestFileProvider(t *testing.T) {
 	determinetype := fp.DetermineType(""); if determinetype != "" {
 		t.Errorf("Default FileProvider DetermineType() did not return an empty string.")
 	}
+
+	createdirectory := fp.CreateDirectory(""); if createdirectory {
+		t.Errorf("Default FileProvider CreateDirectory() returned %v, expected false.", createdirectory)
+	}
+
+	delete := fp.Delete(""); if delete {
+		t.Errorf("Default FileProvider Delete() returned %v, expected false.", createdirectory)
+	}
 }
 
 // Test functions provided by fileutils, which do not return anything.
@@ -93,6 +101,14 @@ func TestDiskProvider(t *testing.T) {
 
 	determinetype := dp.DetermineType("second_test.txt"); if determinetype != "file" {
 		t.Errorf("DiskProvider DetermineType() returned %v, expected \"file\".", determinetype)
+	}
+
+	createdirectory := dp.CreateDirectory("test_dir"); if !createdirectory {
+		t.Errorf("DiskProvider CreateDirectory() returned %v, expected true.", createdirectory)
+	}
+
+	delete := dp.Delete("test_dir"); if !delete {
+		t.Errorf("DiskProvider Delete() returned %v, expected true.", createdirectory)
 	}
 }
 

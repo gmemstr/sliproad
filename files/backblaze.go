@@ -255,6 +255,17 @@ func (bp *BackblazeProvider) SaveFile(file io.Reader, filename string, path stri
 }
 
 func (bp *BackblazeProvider) DetermineType(path string) string {
-	// TODO: Implement directory support for B2.
+	// B2 is really a "flat" filesystem, with directories being virtual.
+	// Therefore, we can assume everything is a file ;)
 	return "file"
+}
+
+func (bp *BackblazeProvider) CreateDirectory(path string) bool {
+	// See above comment about virtual directories.
+	return false
+}
+
+func (bp *BackblazeProvider) Delete(path string) bool {
+	// TODO
+	return false
 }

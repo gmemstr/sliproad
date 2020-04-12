@@ -55,17 +55,17 @@ func (dp *DiskProvider) ViewFile(path string, w io.Writer) {
 }
 
 func (dp *DiskProvider) SaveFile(file io.Reader, filename string, path string) bool {
-	fullPath := strings.Join([]string{dp.Location,path,filename}, "/")
-	f, err := os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE, 0666)
+	rp := strings.Join([]string{dp.Location,path,filename}, "/")
+	f, err := os.OpenFile(rp, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf("error creating %v: %v\n", rp, err.Error())
 		return false
 	}
 	defer f.Close()
 
 	_, err = io.Copy(f, file)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf("error writing %v: %v\n", rp, err.Error())
 		return false
 	}
 	return true
@@ -82,4 +82,24 @@ func (dp *DiskProvider) DetermineType(path string) string {
 	}
 
 	return "file"
+}
+
+func (dp *DiskProvider) CreateDirectory(path string) bool {
+	rp := strings.Join([]string{dp.Location,path}, "/")
+	err := os.Mkdir(rp, 0755)
+	if err != nil {
+		fmt.Printf("Error creating directory %v: %v\n", rp, err.Error())
+		return false
+	}
+	return true
+}
+
+func (dp *DiskProvider) Delete(path string) bool {
+	rp := strings.Join([]string{dp.Location,path}, "/")
+	err := os.RemoveAll(rp)
+	if err != nil {
+		fmt.Printf("Error removing %v: %v\n", path, err.Error())
+		return false
+	}
+	return true
 }
