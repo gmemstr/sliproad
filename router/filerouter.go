@@ -22,72 +22,61 @@ func HandleProvider() Handler {
 
 		// Directory listing or serve file.
 		if r.Method == "GET" {
-			fileList := provider.GetDirectory("")
-			if vars["file"] != "" {
-				filename, err := url.QueryUnescape(vars["file"])
-				if err != nil {
-					return &HTTPError{
-						Message:    fmt.Sprintf("error determining filetype for %s\n", filename),
-						StatusCode: http.StatusInternalServerError,
-					}
-				}
-				fileType, location := provider.ObjectInfo(filename)
-
-				if fileType == "" {
-					return &HTTPError{
-						Message:    fmt.Sprintf("error determining filetype for %s\n", filename),
-						StatusCode: http.StatusInternalServerError,
-					}
-				}
-				if fileType == "file" {
-					if location == "local" {
-						rp := provider.ViewFile(filename)
-						if rp != "" {
-							f, _ := os.Open(rp)
-							http.ServeContent(w, r, filename, time.Time{}, f)
-						}
-					}
-					if location == "remote" {
-						provider.RemoteFile(filename, w)
-					}
-					return nil
-				}
-				fileList = provider.GetDirectory(filename)
-			}
-			data, err := json.Marshal(fileList)
+			filename, err := url.QueryUnescape(vars["file"])
 			if err != nil {
 				return &HTTPError{
-					Message:    fmt.Sprintf("error fetching filelisting for %s\n", vars["file"]),
+					Message:    fmt.Sprintf("error determining filetype for %s\n", filename),
 					StatusCode: http.StatusInternalServerError,
 				}
 			}
-			w.Write(data)
+			ok, isDir, location := provider.ObjectInfo(filename)
+			if !ok {
+				return &HTTPError{
+					Message:    fmt.Sprintf("error locating file %s\n", filename),
+					StatusCode: http.StatusNotFound,
+				}
+			}
+
+			if isDir {
+				fileList := provider.GetDirectory(filename)
+
+				data, err := json.Marshal(fileList)
+				if err != nil {
+					return &HTTPError{
+						Message:    fmt.Sprintf("error fetching filelisting for %s\n", vars["file"]),
+						StatusCode: http.StatusNotFound,
+					}
+				}
+				w.Write(data)
+				return nil
+			}
+
+			// If the file is local, attempt to use http.ServeContent for correct headers.
+			if location == files.FILE_IS_LOCAL {
+				rp := provider.FilePath(filename)
+				if rp != "" {
+					f, err := os.Open(rp)
+					if err != nil {
+						return &HTTPError{
+							Message:    fmt.Sprintf("error opening file %s\n", rp),
+							StatusCode: http.StatusInternalServerError,
+						}
+					}
+					http.ServeContent(w, r, filename, time.Time{}, f)
+				}
+			}
+			// If the file is remote, then delegate the writing to the response to the provider.
+			// This isn't a great workaround, but avoids caching the whole file in mem or on disk.
+			if location == files.FILE_IS_REMOTE {
+				provider.RemoteFile(filename, w)
+			}
+			return nil
 		}
 
 		// File upload or directory creation.
 		if r.Method == "POST" {
 			xType := r.Header.Get("X-NAS-Type")
-
-			if xType == "file" || xType == ""{
-				err := r.ParseMultipartForm(32 << 20)
-				if err != nil {
-					return &HTTPError{
-						Message:    fmt.Sprintf("error parsing form for %s\n", vars["file"]),
-						StatusCode: http.StatusInternalServerError,
-					}
-				}
-				file, handler, err := r.FormFile("file")
-				defer file.Close()
-
-				success := provider.SaveFile(file, handler.Filename, vars["file"])
-				if !success {
-					return &HTTPError{
-						Message:    fmt.Sprintf("error saving file %s\n", vars["file"]),
-						StatusCode: http.StatusInternalServerError,
-					}
-				}
-				w.Write([]byte("saved file"))
-			}
+			// We only really care about this header of creating a directory.
 			if xType == "directory" {
 				dirname := vars["file"]
 				success := provider.CreateDirectory(dirname)
@@ -98,7 +87,27 @@ func HandleProvider() Handler {
 					}
 				}
 				_, _ = w.Write([]byte("created directory"))
+				return nil
 			}
+
+			err := r.ParseMultipartForm(32 << 20)
+			if err != nil {
+				return &HTTPError{
+					Message:    fmt.Sprintf("error parsing form for %s\n", vars["file"]),
+					StatusCode: http.StatusInternalServerError,
+				}
+			}
+			file, handler, err := r.FormFile("file")
+			defer file.Close()
+
+			success := provider.SaveFile(file, handler.Filename, vars["file"])
+			if !success {
+				return &HTTPError{
+					Message:    fmt.Sprintf("error saving file %s\n", vars["file"]),
+					StatusCode: http.StatusInternalServerError,
+				}
+			}
+			_, _  = w.Write([]byte("saved file"))
 		}
 
 		// Delete file.
@@ -114,7 +123,7 @@ func HandleProvider() Handler {
 			_, _ = w.Write([]byte("deleted"))
 		}
 
-			return nil
+		return nil
 	}
 }
 
@@ -132,7 +141,7 @@ func ListProviders() Handler {
 				StatusCode: http.StatusInternalServerError,
 			}
 		}
-		w.Write(data)
+		_, _ = w.Write(data)
 		return nil
 	}
 }

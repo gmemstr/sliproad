@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-const DISK_TESTING_GROUNDS = ".testing_data_directory/"
+const DISK_TESTING_GROUNDS = ".testing_data_directory"
 
 // Test basic file provider.
 // Should return, essentially, nothing. Can be used as a template for other providers.
@@ -24,16 +24,16 @@ func TestFileProvider(t *testing.T) {
 		t.Errorf("Default FileProvider GetDirectory() files returned %v, expected none.", getdirectory.Files)
 	}
 
-	viewfile := fp.ViewFile(""); if viewfile != "" {
-		t.Errorf("Default FileProvider ViewFile() %v, expected nothing.", w)
+	filepath := fp.FilePath(""); if filepath != "" {
+		t.Errorf("Default FileProvider FilePath() %v, expected nothing.", filepath)
 	}
 
 	savefile := fp.SaveFile(nil, "", ""); if savefile != false {
 		t.Errorf("Default FileProvider SaveFile() attempted to save a file.")
 	}
 
-	determinetype := fp.ObjectInfo(""); if determinetype != "" {
-		t.Errorf("Default FileProvider ObjectInfo() did not return an empty string.")
+	exists, isDir, location := fp.ObjectInfo(""); if exists || isDir || location != "" {
+		t.Errorf("Default FileProvider ObjectInfo() did not return default empty values.")
 	}
 
 	createdirectory := fp.CreateDirectory(""); if createdirectory {
@@ -73,7 +73,7 @@ func TestDiskProvider(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create testing directory for DiskProvider: %v", err.Error())
 	}
-	err = ioutil.WriteFile(DISK_TESTING_GROUNDS + "testing.txt", []byte("testing file!"), 0755)
+	err = ioutil.WriteFile(DISK_TESTING_GROUNDS + "/testing.txt", []byte("testing file!"), 0755)
 	if err != nil {
 		t.Fatalf("Failed to create testing file for DiskProvider: %v", err.Error())
 	}
@@ -87,8 +87,8 @@ func TestDiskProvider(t *testing.T) {
 		t.Errorf("DiskProvider GetDirectory() files returned %v, expected 1.", getdirectory.Files)
 	}
 
-	viewfile := dp.ViewFile("testing.txt"); if viewfile !=  DISK_TESTING_GROUNDS + "testing.txt"{
-		t.Errorf("DiskProvider ViewFile() returned %v, expected path.", viewfile)
+	filepath := dp.FilePath("testing.txt"); if filepath !=  DISK_TESTING_GROUNDS + "/testing.txt"{
+		t.Errorf("DiskProvider FilePath() returned %v, expected path.", filepath)
 	}
 
  	testfile := bytes.NewReader([]byte("second test file!"))
@@ -96,8 +96,8 @@ func TestDiskProvider(t *testing.T) {
 		t.Errorf("DiskProvider SaveFile() could not save a file.")
 	}
 
-	determinetype := dp.ObjectInfo("second_test.txt"); if determinetype != "file" {
-		t.Errorf("DiskProvider ObjectInfo() returned %v, expected \"file\".", determinetype)
+	exists, isDir, location := dp.ObjectInfo("second_test.txt"); if !exists || isDir || location != "local" {
+		t.Errorf("DiskProvider ObjectInfo() returned %v %v %v, expected true, false, local", exists, isDir, location)
 	}
 
 	createdirectory := dp.CreateDirectory("test_dir"); if !createdirectory {

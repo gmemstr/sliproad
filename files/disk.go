@@ -42,7 +42,7 @@ func (dp *DiskProvider) GetDirectory(path string) Directory {
 	}
 }
 
-func (dp *DiskProvider) ViewFile(path string) string {
+func (dp *DiskProvider) FilePath(path string) string {
 	rp := strings.Join([]string{dp.Location,path}, "/")
 	return rp
 }
@@ -68,18 +68,18 @@ func (dp *DiskProvider) SaveFile(file io.Reader, filename string, path string) b
 	return true
 }
 
-func (dp *DiskProvider) ObjectInfo(path string) (string, string) {
+func (dp *DiskProvider) ObjectInfo(path string) (bool, bool, string) {
 	rp := strings.Join([]string{dp.Location,path}, "/")
 	fileStat, err := os.Stat(rp)
 	if err != nil {
-		fmt.Printf("error stat'ing file %v: %v", rp, err.Error())
-		return "", ""
+		fmt.Printf("error gather stats for file %v: %v", rp, err.Error())
+		return false, false, FILE_IS_LOCAL
 	}
 
 	if fileStat.IsDir() {
-		return "directory", ""
+		return true, true, FILE_IS_LOCAL
 	}
-	return "file", "local"
+	return true, false, FILE_IS_LOCAL
 }
 
 func (dp *DiskProvider) CreateDirectory(path string) bool {

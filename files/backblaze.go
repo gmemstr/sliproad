@@ -138,7 +138,7 @@ func (bp *BackblazeProvider) GetDirectory(path string) Directory {
 	return finalDir
 }
 
-func (bp *BackblazeProvider) ViewFile(path string) string {
+func (bp *BackblazeProvider) FilePath(path string) string {
 	return ""
 }
 
@@ -257,10 +257,12 @@ func (bp *BackblazeProvider) SaveFile(file io.Reader, filename string, path stri
 	return true
 }
 
-func (bp *BackblazeProvider) ObjectInfo(path string) (string, string) {
+func (bp *BackblazeProvider) ObjectInfo(path string) (bool, bool, string) {
 	// B2 is really a "flat" filesystem, with directories being virtual.
 	// Therefore, we can assume everything is a file ;)
-	return "file", "remote"
+	// TODO: Return true value.
+	isDir := path == ""
+	return true, isDir, FILE_IS_REMOTE
 }
 
 func (bp *BackblazeProvider) CreateDirectory(path string) bool {
