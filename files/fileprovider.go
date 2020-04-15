@@ -31,9 +31,10 @@ type FileContents struct {
 type FileProviderInterface interface {
 	Setup(args map[string]string) bool
 	GetDirectory(path string) Directory
-	ViewFile(path string, w io.Writer)
+	ViewFile(path string) string
+	RemoteFile(path string, writer io.Writer)
 	SaveFile(file io.Reader, filename string, path string) bool
-	DetermineType(path string) string
+	ObjectInfo(path string) (string, string)
 	CreateDirectory(path string) bool
 	Delete(path string) bool
 }
@@ -47,7 +48,11 @@ func (f FileProvider) GetDirectory(path string) Directory {
 	return Directory{}
 }
 
-func (f FileProvider) ViewFile(path string, w io.Writer) {
+func (f FileProvider) ViewFile(path string) string {
+	return ""
+}
+
+func (f FileProvider) RemoteFile(path string, writer io.Writer) {
 	return
 }
 
@@ -55,8 +60,8 @@ func (f FileProvider) SaveFile(file io.Reader, filename string, path string) boo
 	return false
 }
 
-func (f FileProvider) DetermineType(path string) string {
-	return ""
+func (f FileProvider) ObjectInfo(path string) (string, string) {
+	return "", ""
 }
 
 func (f FileProvider) CreateDirectory(path string) bool {
@@ -66,4 +71,3 @@ func (f FileProvider) CreateDirectory(path string) bool {
 func (f FileProvider) Delete(path string) bool {
 	return false
 }
-

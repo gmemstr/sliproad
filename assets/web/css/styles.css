@@ -102,16 +102,6 @@ body, h1 a {
     }
 }
 
-.forms {
-    margin: 0 auto;
-    width: 40%;
-}
-
-form {
-    display: inline-block;
-    width: 30%;
-}
-
 @media only screen and (max-width: 1170px) {
     .grid-lg {
         display: block;
@@ -200,7 +190,14 @@ button {
     background-color: var(--blue);
 }
 
-.item {
+.item, .forms {
     display: flex;
+}
+.item {
     justify-content: center;
+}
+.forms {
+    width: 40%;
+    margin: 0 auto;
+    justify-content: space-around;
 }

@@ -7,8 +7,10 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"net/url"
+	"os"
 	"sort"
 	"strings"
+	"time"
 )
 
 func HandleProvider() Handler {
@@ -29,7 +31,8 @@ func HandleProvider() Handler {
 						StatusCode: http.StatusInternalServerError,
 					}
 				}
-				fileType := provider.DetermineType(filename)
+				fileType, location := provider.ObjectInfo(filename)
+
 				if fileType == "" {
 					return &HTTPError{
 						Message:    fmt.Sprintf("error determining filetype for %s\n", filename),
@@ -37,7 +40,16 @@ func HandleProvider() Handler {
 					}
 				}
 				if fileType == "file" {
-					provider.ViewFile(filename, w)
+					if location == "local" {
+						rp := provider.ViewFile(filename)
+						if rp != "" {
+							f, _ := os.Open(rp)
+							http.ServeContent(w, r, filename, time.Time{}, f)
+						}
+					}
+					if location == "remote" {
+						provider.RemoteFile(filename, w)
+					}
 					return nil
 				}
 				fileList = provider.GetDirectory(filename)

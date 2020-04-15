@@ -42,16 +42,13 @@ func (dp *DiskProvider) GetDirectory(path string) Directory {
 	}
 }
 
-func (dp *DiskProvider) ViewFile(path string, w io.Writer) {
-	file := strings.Join([]string{dp.Location,path}, "/")
-	fileReader, err := os.Open(file)
-	if err != nil {
-		return
-	}
-	_, err = io.Copy(w, fileReader)
-	if err != nil {
-		return
-	}
+func (dp *DiskProvider) ViewFile(path string) string {
+	rp := strings.Join([]string{dp.Location,path}, "/")
+	return rp
+}
+
+func (dp *DiskProvider) RemoteFile(path string, writer io.Writer) {
+	return
 }
 
 func (dp *DiskProvider) SaveFile(file io.Reader, filename string, path string) bool {
@@ -71,17 +68,18 @@ func (dp *DiskProvider) SaveFile(file io.Reader, filename string, path string) b
 	return true
 }
 
-func (dp *DiskProvider) DetermineType(path string) string {
+func (dp *DiskProvider) ObjectInfo(path string) (string, string) {
 	rp := strings.Join([]string{dp.Location,path}, "/")
-	file, err := os.Stat(rp)
+	fileStat, err := os.Stat(rp)
 	if err != nil {
-		return ""
-	}
-	if file.IsDir() {
-		return "directory"
+		fmt.Printf("error stat'ing file %v: %v", rp, err.Error())
+		return "", ""
 	}
 
-	return "file"
+	if fileStat.IsDir() {
+		return "directory", ""
+	}
+	return "file", "local"
 }
 
 func (dp *DiskProvider) CreateDirectory(path string) bool {

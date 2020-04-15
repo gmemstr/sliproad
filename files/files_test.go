@@ -24,8 +24,7 @@ func TestFileProvider(t *testing.T) {
 		t.Errorf("Default FileProvider GetDirectory() files returned %v, expected none.", getdirectory.Files)
 	}
 
-	var w bytes.Buffer
-	fp.ViewFile("", &w); if len(w.Bytes()) > 0 {
+	viewfile := fp.ViewFile(""); if viewfile != "" {
 		t.Errorf("Default FileProvider ViewFile() %v, expected nothing.", w)
 	}
 
@@ -33,8 +32,8 @@ func TestFileProvider(t *testing.T) {
 		t.Errorf("Default FileProvider SaveFile() attempted to save a file.")
 	}
 
-	determinetype := fp.DetermineType(""); if determinetype != "" {
-		t.Errorf("Default FileProvider DetermineType() did not return an empty string.")
+	determinetype := fp.ObjectInfo(""); if determinetype != "" {
+		t.Errorf("Default FileProvider ObjectInfo() did not return an empty string.")
 	}
 
 	createdirectory := fp.CreateDirectory(""); if createdirectory {
@@ -88,10 +87,8 @@ func TestDiskProvider(t *testing.T) {
 		t.Errorf("DiskProvider GetDirectory() files returned %v, expected 1.", getdirectory.Files)
 	}
 
-	var w bytes.Buffer
-	dp.ViewFile("testing.txt", &w); if w.String() != "testing file!" {
-		fmt.Println(w)
-		t.Errorf("DiskProvider ViewFile() returned %v, expected \"testing file!\".", w.String())
+	viewfile := dp.ViewFile("testing.txt"); if viewfile !=  DISK_TESTING_GROUNDS + "testing.txt"{
+		t.Errorf("DiskProvider ViewFile() returned %v, expected path.", viewfile)
 	}
 
  	testfile := bytes.NewReader([]byte("second test file!"))
@@ -99,8 +96,8 @@ func TestDiskProvider(t *testing.T) {
 		t.Errorf("DiskProvider SaveFile() could not save a file.")
 	}
 
-	determinetype := dp.DetermineType("second_test.txt"); if determinetype != "file" {
-		t.Errorf("DiskProvider DetermineType() returned %v, expected \"file\".", determinetype)
+	determinetype := dp.ObjectInfo("second_test.txt"); if determinetype != "file" {
+		t.Errorf("DiskProvider ObjectInfo() returned %v, expected \"file\".", determinetype)
 	}
 
 	createdirectory := dp.CreateDirectory("test_dir"); if !createdirectory {

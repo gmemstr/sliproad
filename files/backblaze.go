@@ -138,7 +138,11 @@ func (bp *BackblazeProvider) GetDirectory(path string) Directory {
 	return finalDir
 }
 
-func (bp *BackblazeProvider) ViewFile(path string, w io.Writer) {
+func (bp *BackblazeProvider) ViewFile(path string) string {
+	return ""
+}
+
+func (bp *BackblazeProvider) RemoteFile(path string, w io.Writer) {
 	client := &http.Client{}
 	// Get bucket name >:(
 	bucketIdPayload := fmt.Sprintf(`{"accountId": "%s", "bucketId": "%s"}`, bp.Name, bp.Bucket)
@@ -244,7 +248,6 @@ func (bp *BackblazeProvider) SaveFile(file io.Reader, filename string, path stri
 	req.Header.Add("X-Bz-Content-Sha1", fmt.Sprintf("%x", fileSha.Sum(nil)))
 	req.ContentLength = int64(len(bodyBytes))
 
-	// Upload in background.
 	res, err = client.Do(req)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -254,10 +257,10 @@ func (bp *BackblazeProvider) SaveFile(file io.Reader, filename string, path stri
 	return true
 }
 
-func (bp *BackblazeProvider) DetermineType(path string) string {
+func (bp *BackblazeProvider) ObjectInfo(path string) (string, string) {
 	// B2 is really a "flat" filesystem, with directories being virtual.
 	// Therefore, we can assume everything is a file ;)
-	return "file"
+	return "file", "remote"
 }
 
 func (bp *BackblazeProvider) CreateDirectory(path string) bool {

@@ -27,7 +27,7 @@ function getFileListing(provider, path = "") {
       </form>
       <form id="createdir" action="#" method="post">
         <input type="text" id="newdir" data-dir="${provider}${path}">
-        <input type="submit" value="mkdir" id="newdir_submit">
+        <input type="submit" value="Create Directory" id="newdir_submit">
       </form>
       </div>
       <div class="list">
@@ -81,7 +81,6 @@ function getProviders() {
 // Dumb router function for passing around values from the hash.
 function router(event = null) {
   let hash = location.hash.replace("#", "")
-  console.log(hash)
   // If hash is empty, "redirect" to index.
   if (hash === "") {
     getProviders()
