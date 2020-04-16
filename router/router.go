@@ -47,20 +47,30 @@ func Init() *mux.Router {
 
 	// Paths that require specific handlers
 	r.Handle("/", Handle(
+		requiresAuth(),
 		rootHandler(),
 	)).Methods("GET")
 
+	// File & Provider API
 	r.Handle("/api/providers", Handle(
+		requiresAuth(),
 		ListProviders(),
 	)).Methods("GET")
 	
 	r.Handle(`/api/files/{provider:[a-zA-Z0-9]+\/*}`, Handle(
+		requiresAuth(),
 		HandleProvider(),
 	)).Methods("GET", "POST")
 
 	r.Handle(`/api/files/{provider:[a-zA-Z0-9]+}/{file:.+}`, Handle(
+		requiresAuth(),
 		HandleProvider(),
 	)).Methods("GET", "POST", "DELETE")
+
+	// Auth API & Endpoints
+	r.Handle(`/api/auth/callback`, Handle(
+		callbackAuth(),
+	)).Methods("GET", "POST")
 
 	return r
 }

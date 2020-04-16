@@ -16,6 +16,7 @@
 
 # Config files
 providers.yml
+auth.yml
 
 # Binary
 nas
