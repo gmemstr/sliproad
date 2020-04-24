@@ -73,13 +73,13 @@ func (dp *DiskProvider) ObjectInfo(path string) (bool, bool, string) {
 	fileStat, err := os.Stat(rp)
 	if err != nil {
 		fmt.Printf("error gather stats for file %v: %v", rp, err.Error())
-		return false, false, FILE_IS_LOCAL
+		return false, false, FileIsLocal
 	}
 
 	if fileStat.IsDir() {
-		return true, true, FILE_IS_LOCAL
+		return true, true, FileIsLocal
 	}
-	return true, false, FILE_IS_LOCAL
+	return true, false, FileIsLocal
 }
 
 func (dp *DiskProvider) CreateDirectory(path string) bool {

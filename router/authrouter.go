@@ -2,15 +2,18 @@ package router
 
 import (
 	"fmt"
-	"github.com/gmemstr/nas/authentication"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/gmemstr/nas/authentication"
 )
 
+// AuthEnabled is a global variable that determines whether we were
+// able to set up an authentication method (e.g Keycloak).
 var AuthEnabled bool = true
 
-func requiresAuth() Handler {
-	return func(context *Context, w http.ResponseWriter, r *http.Request) *HTTPError {
+func requiresAuth() handler {
+	return func(context *requestContext, w http.ResponseWriter, r *http.Request) *httpError {
 		if !AuthEnabled {
 			return nil
 		}
@@ -20,7 +23,7 @@ func requiresAuth() Handler {
 				fmt.Println("Error", err.Error())
 			}
 			http.Redirect(w, r, authentication.GetLoginLink(), 307)
-			return &HTTPError{
+			return &httpError{
 				Message:    "Unauthorized! Redirecting to /login",
 				StatusCode: http.StatusTemporaryRedirect,
 			}
@@ -29,8 +32,8 @@ func requiresAuth() Handler {
 	}
 }
 
-func callbackAuth() Handler {
-	return func(context *Context, w http.ResponseWriter, r *http.Request) *HTTPError {
+func callbackAuth() handler {
+	return func(context *requestContext, w http.ResponseWriter, r *http.Request) *httpError {
 		// Translate callback GET to POST to set cookie, then redirect.
 		if r.Method == "GET" {
 			javascript := `

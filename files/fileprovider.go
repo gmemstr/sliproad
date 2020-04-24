@@ -4,9 +4,14 @@ import (
 	"io"
 )
 
-const FILE_IS_REMOTE = "remote"
-const FILE_IS_LOCAL = "local"
+// FileIsRemote denotes whether file is a remote file.
+const FileIsRemote = "remote"
 
+// FileIsLocal denotes whether file is a local file.
+const FileIsLocal = "local"
+
+// FileProvider aggregates some very basic properties for authentication and
+// provider decoding.
 type FileProvider struct {
 	Name           string            `yaml:"name"`
 	Provider       string            `yaml:"provider"`
@@ -15,72 +20,72 @@ type FileProvider struct {
 	Config         map[string]string `yaml:"config"`
 }
 
+// Directory contains the path and a collection of FileInfos.
 type Directory struct {
 	Path  string
 	Files []FileInfo
 }
 
+// FileInfo describes a single file or directory, doing it's best to
+// figure out the extension as well.
 type FileInfo struct {
 	IsDirectory bool
 	Name        string
 	Extension   string
 }
 
-type FileContents struct {
-	Content []byte
-	IsUrl   bool
-}
-
+// FileProviderInterface provides some sane default functions.
 type FileProviderInterface interface {
-	// Called on initial startup of the application.
 	Setup(args map[string]string) (ok bool)
-	// Fetches the contents of a "directory".
 	GetDirectory(path string) (directory Directory)
-	// Builds a path to a file, for serving.
 	FilePath(path string) (realpath string)
-	// Fetch and pass along a remote file directly to the response writer.
 	RemoteFile(path string, writer io.Writer)
-	// Save a file from an io.Reader.
 	SaveFile(file io.Reader, filename string, path string) (ok bool)
-	// Fetch the info for an object given a path to if the file exists and location.
-	// Should return whether the path exists, if the path is a directory, and if it lives on disk.
-	// (see constants defined: `FILE_IS_REMOTE` and `FILE_IS_LOCAL`)
 	ObjectInfo(path string) (exists bool, isDir bool, location string)
-	// Create a directory if possible, returns the result.
 	CreateDirectory(path string) (ok bool)
-	// Delete a file or directory.
 	Delete(path string) (ok bool)
 }
 
 /** DO NOT USE THESE DEFAULTS **/
+
+// Setup runs when the application starts up, and allows for things like authentication.
 func (f FileProvider) Setup(args map[string]string) bool {
 	return false
 }
 
+// GetDirectory fetches a directory's contents.
 func (f FileProvider) GetDirectory(path string) Directory {
 	return Directory{}
 }
 
+// FilePath returns the path to the file, whether it be a URL or local file path.
 func (f FileProvider) FilePath(path string) string {
 	return ""
 }
 
+// RemoteFile will bypass http.ServeContent() and instead write directly to the response.
 func (f FileProvider) RemoteFile(path string, writer io.Writer) {
 	return
 }
 
+// SaveFile will save a file with the contents of the io.Reader at the path specified.
 func (f FileProvider) SaveFile(file io.Reader, filename string, path string) bool {
 	return false
 }
 
+// ObjectInfo will return the info for an object given a path to if the file exists and location.
+// Should return whether the path exists, if the path is a directory, and if it lives on disk.
+// (see constants defined: `FILE_IS_REMOTE` and `FILE_IS_LOCAL`)
 func (f FileProvider) ObjectInfo(path string) (bool, bool, string) {
 	return false, false, ""
 }
 
+// CreateDirectory will create a directory on services that support it.
 func (f FileProvider) CreateDirectory(path string) bool {
 	return false
 }
 
+// Delete simply deletes a file. This is expected to be a destructive action by default.
 func (f FileProvider) Delete(path string) bool {
 	return false
 }

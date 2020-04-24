@@ -2,27 +2,29 @@ package router
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
-type Handler func(context *Context, w http.ResponseWriter, r *http.Request) *HTTPError
+type handler func(context *requestContext, w http.ResponseWriter, r *http.Request) *httpError
 
-type HTTPError struct {
-	Message string
+type httpError struct {
+	Message    string
 	StatusCode int
 }
 
-// Context contains any information to be shared with middlewares.
-type Context struct {}
+type requestContext struct{}
 
-func Handle(handlers ...Handler) http.Handler {
+// Loop through passed functions and execute them, passing through the current
+// requestContext, response writer and request reader.
+func handle(handlers ...handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		context := &Context{}
+		context := &requestContext{}
 		for _, handler := range handlers {
 			err := handler(context, w, r)
 			if err != nil {
@@ -34,8 +36,7 @@ func Handle(handlers ...Handler) http.Handler {
 	})
 }
 
-
-// Actual router, define endpoints here.
+// Init initializes the main router and all routes for the application.
 func Init() *mux.Router {
 
 	r := mux.NewRouter()
@@ -46,29 +47,29 @@ func Init() *mux.Router {
 	r.PathPrefix("/icons/").Handler(http.StripPrefix("/icons/", http.FileServer(http.Dir("assets/web/icons"))))
 
 	// Paths that require specific handlers
-	r.Handle("/", Handle(
+	r.Handle("/", handle(
 		requiresAuth(),
 		rootHandler(),
 	)).Methods("GET")
 
 	// File & Provider API
-	r.Handle("/api/providers", Handle(
+	r.Handle("/api/providers", handle(
 		requiresAuth(),
-		ListProviders(),
+		listProviders(),
 	)).Methods("GET")
-	
-	r.Handle(`/api/files/{provider:[a-zA-Z0-9]+\/*}`, Handle(
+
+	r.Handle(`/api/files/{provider:[a-zA-Z0-9]+\/*}`, handle(
 		requiresAuth(),
-		HandleProvider(),
+		handleProvider(),
 	)).Methods("GET", "POST")
 
-	r.Handle(`/api/files/{provider:[a-zA-Z0-9]+}/{file:.+}`, Handle(
+	r.Handle(`/api/files/{provider:[a-zA-Z0-9]+}/{file:.+}`, handle(
 		requiresAuth(),
-		HandleProvider(),
+		handleProvider(),
 	)).Methods("GET", "POST", "DELETE")
 
 	// Auth API & Endpoints
-	r.Handle(`/api/auth/callback`, Handle(
+	r.Handle(`/api/auth/callback`, handle(
 		callbackAuth(),
 	)).Methods("GET", "POST")
 
@@ -76,11 +77,11 @@ func Init() *mux.Router {
 }
 
 // Handles serving index page.
-func rootHandler() Handler {
-	return func(context *Context, w http.ResponseWriter, r *http.Request) *HTTPError {
+func rootHandler() handler {
+	return func(context *requestContext, w http.ResponseWriter, r *http.Request) *httpError {
 		f, err := os.Open("assets/web/index.html")
 		if err != nil {
-			return &HTTPError{
+			return &httpError{
 				Message:    fmt.Sprintf("error serving index page from assets/web"),
 				StatusCode: http.StatusInternalServerError,
 			}
@@ -89,7 +90,7 @@ func rootHandler() Handler {
 		defer f.Close()
 		stats, err := f.Stat()
 		if err != nil {
-			return &HTTPError{
+			return &httpError{
 				Message:    fmt.Sprintf("error serving index page from assets/web"),
 				StatusCode: http.StatusInternalServerError,
 			}
@@ -99,7 +100,7 @@ func rootHandler() Handler {
 
 		_, err = io.Copy(w, f)
 		if err != nil {
-			return &HTTPError{
+			return &httpError{
 				Message:    fmt.Sprintf("error serving index page from assets/web"),
 				StatusCode: http.StatusInternalServerError,
 			}

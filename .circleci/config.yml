@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  upx: gmem/upx@1.0.1
+  upx: circleci/upx@1.0.1
 jobs:
   build:
     docker:

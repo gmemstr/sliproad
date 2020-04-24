@@ -262,7 +262,7 @@ func (bp *BackblazeProvider) ObjectInfo(path string) (bool, bool, string) {
 	// Therefore, we can assume everything is a file ;)
 	// TODO: Return true value.
 	isDir := path == ""
-	return true, isDir, FILE_IS_REMOTE
+	return true, isDir, FileIsRemote
 }
 
 func (bp *BackblazeProvider) CreateDirectory(path string) bool {

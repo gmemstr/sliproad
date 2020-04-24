@@ -13,8 +13,8 @@ import (
 	"time"
 )
 
-func HandleProvider() Handler {
-	return func(context *Context, w http.ResponseWriter, r *http.Request) *HTTPError {
+func handleProvider() handler {
+	return func(context *requestContext, w http.ResponseWriter, r *http.Request) *httpError {
 		vars := mux.Vars(r)
 		providerCodename := vars["provider"]
 		providerCodename = strings.Replace(providerCodename, "/", "", -1)
@@ -24,14 +24,14 @@ func HandleProvider() Handler {
 		if r.Method == "GET" {
 			filename, err := url.QueryUnescape(vars["file"])
 			if err != nil {
-				return &HTTPError{
+				return &httpError{
 					Message:    fmt.Sprintf("error determining filetype for %s\n", filename),
 					StatusCode: http.StatusInternalServerError,
 				}
 			}
 			ok, isDir, location := provider.ObjectInfo(filename)
 			if !ok {
-				return &HTTPError{
+				return &httpError{
 					Message:    fmt.Sprintf("error locating file %s\n", filename),
 					StatusCode: http.StatusNotFound,
 				}
@@ -42,7 +42,7 @@ func HandleProvider() Handler {
 
 				data, err := json.Marshal(fileList)
 				if err != nil {
-					return &HTTPError{
+					return &httpError{
 						Message:    fmt.Sprintf("error fetching filelisting for %s\n", vars["file"]),
 						StatusCode: http.StatusNotFound,
 					}
@@ -52,12 +52,12 @@ func HandleProvider() Handler {
 			}
 
 			// If the file is local, attempt to use http.ServeContent for correct headers.
-			if location == files.FILE_IS_LOCAL {
+			if location == files.FileIsLocal {
 				rp := provider.FilePath(filename)
 				if rp != "" {
 					f, err := os.Open(rp)
 					if err != nil {
-						return &HTTPError{
+						return &httpError{
 							Message:    fmt.Sprintf("error opening file %s\n", rp),
 							StatusCode: http.StatusInternalServerError,
 						}
@@ -67,7 +67,7 @@ func HandleProvider() Handler {
 			}
 			// If the file is remote, then delegate the writing to the response to the provider.
 			// This isn't a great workaround, but avoids caching the whole file in mem or on disk.
-			if location == files.FILE_IS_REMOTE {
+			if location == files.FileIsRemote {
 				provider.RemoteFile(filename, w)
 			}
 			return nil
@@ -81,7 +81,7 @@ func HandleProvider() Handler {
 				dirname := vars["file"]
 				success := provider.CreateDirectory(dirname)
 				if !success {
-					return &HTTPError{
+					return &httpError{
 						Message:    fmt.Sprintf("error creating directory %s\n", dirname),
 						StatusCode: http.StatusInternalServerError,
 					}
@@ -92,7 +92,7 @@ func HandleProvider() Handler {
 
 			err := r.ParseMultipartForm(32 << 20)
 			if err != nil {
-				return &HTTPError{
+				return &httpError{
 					Message:    fmt.Sprintf("error parsing form for %s\n", vars["file"]),
 					StatusCode: http.StatusInternalServerError,
 				}
@@ -102,7 +102,7 @@ func HandleProvider() Handler {
 
 			success := provider.SaveFile(file, handler.Filename, vars["file"])
 			if !success {
-				return &HTTPError{
+				return &httpError{
 					Message:    fmt.Sprintf("error saving file %s\n", vars["file"]),
 					StatusCode: http.StatusInternalServerError,
 				}
@@ -115,7 +115,7 @@ func HandleProvider() Handler {
 			path := vars["file"]
 			success := provider.Delete(path)
 			if !success {
-				return &HTTPError{
+				return &httpError{
 					Message:    fmt.Sprintf("error deleting %s\n", path),
 					StatusCode: http.StatusInternalServerError,
 				}
@@ -127,16 +127,16 @@ func HandleProvider() Handler {
 	}
 }
 
-func ListProviders() Handler {
-	return func(context *Context, w http.ResponseWriter, r *http.Request) *HTTPError {
+func listProviders() handler {
+	return func(context *requestContext, w http.ResponseWriter, r *http.Request) *httpError {
 		var providers []string
-		for v, _ := range files.ProviderConfig {
+		for v := range files.ProviderConfig {
 			providers = append(providers, v)
 		}
 		sort.Strings(providers)
 		data, err := json.Marshal(providers)
 		if err != nil {
-			return &HTTPError{
+			return &httpError{
 				Message:    fmt.Sprintf("error provider listing"),
 				StatusCode: http.StatusInternalServerError,
 			}
