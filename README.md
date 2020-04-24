@@ -1,9 +1,9 @@
-# nas
-bringing filesystems together
+# sliproad
+merging filesystems together
 
 ## about
 
-this project aims to be an easy-to-manage web application that allows the management of cloud storage, whether it be on
+this project aims to be an easy-to-user web API that allows the management of cloud storage, whether it be on
 the host machine or part of a remote api. this is intended mostly for my own use, but i am documenting it in a way that
 i hope allows others to pick it up and improve on it down the line.
 

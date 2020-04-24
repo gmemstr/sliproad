@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+
 	"github.com/gmemstr/nas/authentication"
 	"github.com/gmemstr/nas/files"
 	"github.com/gmemstr/nas/router"
 	"github.com/go-yaml/yaml"
-	"io/ioutil"
-	"log"
-	"net/http"
 )
 
 // Main function that defines routes
@@ -39,6 +40,6 @@ func main() {
 	}
 
 	r := router.Init()
-	fmt.Println("Your NAS instance is live on port :3000")
+	fmt.Println("Your sliproad instance is live on port :3000")
 	log.Fatal(http.ListenAndServe(":3000", r))
 }
