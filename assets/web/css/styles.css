@@ -1,0 +1,203 @@
+:root {
+    /* https://coolors.co/fe4a49-fed766-009fb7-e6e6ea-f4f4f8 */
+    --orange: rgba(254, 74, 73, 1);
+    --yellow: rgba(254, 215, 102, 1);
+    --blue: rgba(0, 159, 183, 1);
+    --platinum: rgba(230, 230, 234, 1);
+    --white: rgba(244, 244, 248, 1);
+
+    --desktop-width: 1170px;
+}
+
+body, h1 a {
+    font-family: sans-serif;
+    color: var(--orange);
+    background-color: var(--white);
+}
+
+.grid-lg {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 2fr);
+    grid-column-gap: 5px;
+    grid-row-gap: 5px;
+}
+
+.grid-lg a {
+    display: flex;
+    padding: 10vh;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.5s;
+    background-color: var(--blue);
+}
+
+.list {
+    width: 40%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.list a {
+    padding: 1vh;
+    font-size: 24px;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    transition: background-color 0.5s;
+    -ms-word-wrap: anywhere;
+    word-wrap: anywhere;
+    margin: 5px 0;
+    position: relative;
+    border-radius: 5px 0 0 5px;
+    display: inline-block;
+    width: 93%;
+}
+
+.list a img {
+    left: 1vw;
+    top: 1vh;
+    position: absolute;
+}
+
+.list a.file {
+    background-color: var(--orange);
+}
+
+.list a.directory {
+    background-color: var(--blue);
+}
+
+.grid-lg a:visited, .grid-lg a,
+.list a:visited, .list a {
+    color: var(--white);
+}
+.grid-lg a:hover,
+.list a.directory:hover {
+    color: var(--blue);
+    background-color: var(--platinum);
+    transition: background-color 0.5s, color 0.5s;
+}
+.list a.file:hover {
+    color: var(--orange);
+    background-color: var(--platinum);
+    transition: background-color 0.5s, color 0.5s;
+}
+
+@media (prefers-color-scheme: dark) {
+    body, h1 a { background-color: black; }
+    .grid-lg a {
+        color: black;
+    }
+    .grid-lg a:visited, .grid-lg a {
+        color: black
+    }
+    .grid-lg a:hover {
+        color: lightgray;
+        background-color: darkgray;
+        transition: background-color 0.5s;
+    }
+}
+
+@media only screen and (max-width: 1170px) {
+    .grid-lg {
+        display: block;
+    }
+    .grid-lg a {
+        margin: 10px;
+    }
+    .list, form {
+        width: 90%;
+    }
+    .list a img {
+        display: none;
+    }
+}
+
+input[type="file"] {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+input[type="file"]  + label, input[type="submit"], button {
+    color: var(--orange);
+    padding: 10px;
+    font-size: 1.25em;
+    font-weight: 700;
+    display: inline-block;
+    border: 2px solid var(--orange);
+    border-radius: 5px;
+    transition: background-color 0.5s, color 0.5s;
+}
+
+input[type="text"] {
+    padding: 10px;
+    font-size: 1.25em;
+    font-weight: 500;
+    display: inline-block;
+    border: 2px solid var(--orange);
+    border-radius: 5px;
+    transition: background-color 0.5s, color 0.5s;
+    width: 50%;
+}
+
+input[type="file"]:focus + label,
+input[type="file"]  + label:hover,
+input[type="submit"]:hover,
+button:hover {
+    background-color: var(--orange);
+    color: var(--white);
+    transition: background-color 0.5s, color 0.5s;
+}
+
+progress {
+    background: var(--platinum);
+    border: 1px solid var(--orange);
+}
+progress::-webkit-progress-bar {
+    background: var(--orange);
+}
+progress::-webkit-progress-value {
+    background: var(--orange);
+}
+progress::-moz-progress-bar {
+    background: var(--orange);
+}
+
+button {
+    padding: 1vh;
+    font-size: 24px;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    transition: background-color 0.5s;
+    margin: 5px 0;
+    position: relative;
+    border-radius: 0 5px 5px 0;
+}
+
+.directory ~ button {
+    border-color: var(--blue);
+}
+.directory ~ button:hover {
+    background-color: var(--blue);
+}
+
+.item, .forms {
+    display: flex;
+}
+.item {
+    justify-content: center;
+}
+.forms {
+    width: 40%;
+    margin: 0 auto;
+    justify-content: space-around;
+}

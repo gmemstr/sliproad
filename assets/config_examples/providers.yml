@@ -1,0 +1,20 @@
+# A "provider" is a service that provides access to a filesystem.
+#
+# A full configuration for every provider implemented in the application.
+# You can find full breakdowns for each provider's configuration in it's respective file under
+# `assets/config_examples/`.
+#
+# Schema is as follows:
+# Provider Name: string - used to identify which filesystem to access.
+#   provider: string - should be one of the built-in providers.
+#   path: string - optional, just used for `disk` right now.
+#   config: mapping - used for provider-specific configuration values, such as authentication.
+disk:
+  provider: disk
+  path: /tmp/nas
+backblaze:
+  provider: backblaze
+  config:
+    applicationKeyId: aaaaaaaaaaaa
+    applicationKey: aaaaaaaaaaaa
+    bucket: aaaaaaaaaaaa

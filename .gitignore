@@ -14,12 +14,13 @@
 # IntelliJ
 .idea/
 
-# Config file
-config.json
+# Config files
+providers.yml
+auth.yml
 
 # Binary
 nas
+build/
 
 *.db
 .lock
-assets/web/*
