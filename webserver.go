@@ -1,7 +1,9 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,6 +13,9 @@ import (
 	"github.com/gmemstr/nas/router"
 	"github.com/go-yaml/yaml"
 )
+
+//go:embed assets/web/*
+var sc embed.FS
 
 // Main function that defines routes
 func main() {
@@ -39,7 +44,8 @@ func main() {
 		fmt.Println("Keycloak configured")
 	}
 
-	r := router.Init()
+	fsys, err := fs.Sub(sc, "assets/web")
+	r := router.Init(fsys)
 	fmt.Println("Your sliproad instance is live on port :3000")
 	log.Fatal(http.ListenAndServe(":3000", r))
 }

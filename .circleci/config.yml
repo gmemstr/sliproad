@@ -4,12 +4,12 @@ orbs:
 jobs:
   build:
     docker:
-      - image: cimg/go:1.14
+      - image: cimg/go:1.16
     steps:
       - checkout
       - restore_cache:
           keys:
-            - go-mod-{{ checksum "go.sum" }}-v2
+            - go-mod-{{ checksum "go.sum" }}-v3
             - go-mod-{{ checksum "go.sum" }}
             - go-mod
       - upx/install
@@ -18,17 +18,17 @@ jobs:
       - store_artifacts:
           path: build
       - save_cache:
-          key: go-mod-{{ checksum "go.sum" }}-v2
+          key: go-mod-{{ checksum "go.sum" }}-v3
           paths:
             - /home/circleci/go/pkg/mod
   test:
     docker:
-      - image: cimg/go:1.14
+      - image: cimg/go:1.16
     steps:
       - checkout
       - restore_cache:
           keys:
-            - go-mod-{{ checksum "go.sum" }}-v2
+            - go-mod-{{ checksum "go.sum" }}-v3
             - go-mod-{{ checksum "go.sum" }}
             - go-mod
       - run:
