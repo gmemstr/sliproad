@@ -140,10 +140,6 @@ func (bp *BackblazeProvider) GetDirectory(path string) Directory {
 	return finalDir
 }
 
-func (bp *BackblazeProvider) FilePath(path string) string {
-	return ""
-}
-
 func (bp *BackblazeProvider) SendFile(path string, w io.Writer) (stream io.Reader, contenttype string, err error) {
 	client := &http.Client{}
 	// Get bucket name >:(
