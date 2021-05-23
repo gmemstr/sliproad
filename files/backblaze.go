@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime"
 	"net/http"
+	"path/filepath"
 	"strings"
 )
 
@@ -142,7 +144,7 @@ func (bp *BackblazeProvider) FilePath(path string) string {
 	return ""
 }
 
-func (bp *BackblazeProvider) RemoteFile(path string, w io.Writer) {
+func (bp *BackblazeProvider) SendFile(path string, w io.Writer) (stream io.Reader, contenttype string, err error) {
 	client := &http.Client{}
 	// Get bucket name >:(
 	bucketIdPayload := fmt.Sprintf(`{"accountId": "%s", "bucketId": "%s"}`, bp.Name, bp.Bucket)
@@ -150,20 +152,17 @@ func (bp *BackblazeProvider) RemoteFile(path string, w io.Writer) {
 	req, err := http.NewRequest("POST", bp.Location + "/b2api/v2/b2_list_buckets",
 		bytes.NewBuffer([]byte(bucketIdPayload)))
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		return nil, contenttype, err
 	}
 	req.Header.Add("Authorization", bp.Authentication)
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		return nil, contenttype, err
 	}
 	bucketData, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		return nil, contenttype, err
 	}
 
 	var data BackblazeBucketInfoPayload
@@ -175,22 +174,23 @@ func (bp *BackblazeProvider) RemoteFile(path string, w io.Writer) {
 		url,
 		bytes.NewBuffer([]byte("")))
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		return nil, contenttype, err
 	}
 	req.Header.Add("Authorization", bp.Authentication)
 	file, err := client.Do(req)
 
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		return nil, contenttype, err
 	}
 
-	_, err = io.Copy(w, file.Body)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
+	contenttype = mime.TypeByExtension(filepath.Ext(path))
+	if contenttype == "" {
+		var buf [512]byte
+		n, _ := io.ReadFull(file.Body, buf[:])
+		contenttype = http.DetectContentType(buf[:n])
 	}
+
+	return file.Body, contenttype, err
 }
 
 func (bp *BackblazeProvider) SaveFile(file io.Reader, filename string, path string) bool {

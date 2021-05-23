@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime"
+	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -42,13 +45,22 @@ func (dp *DiskProvider) GetDirectory(path string) Directory {
 	}
 }
 
-func (dp *DiskProvider) FilePath(path string) string {
+func (dp *DiskProvider) SendFile(path string, writer io.Writer) (stream io.Reader, contenttype string, err error) {
 	rp := strings.Join([]string{dp.Location,path}, "/")
-	return rp
-}
+	f, err := os.Open(rp)
+	if err != nil {
+		return stream, contenttype, err
+	}
 
-func (dp *DiskProvider) RemoteFile(path string, writer io.Writer) {
-	return
+	contenttype = mime.TypeByExtension(filepath.Ext(rp))
+
+	if contenttype == "" {
+		var buf [512]byte
+		n, _ := io.ReadFull(f, buf[:])
+		contenttype = http.DetectContentType(buf[:n])
+	}
+
+	return f, contenttype, nil
 }
 
 func (dp *DiskProvider) SaveFile(file io.Reader, filename string, path string) bool {

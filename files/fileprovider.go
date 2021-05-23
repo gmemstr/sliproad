@@ -39,7 +39,7 @@ type FileProviderInterface interface {
 	Setup(args map[string]string) (ok bool)
 	GetDirectory(path string) (directory Directory)
 	FilePath(path string) (realpath string)
-	RemoteFile(path string, writer io.Writer)
+	SendFile(path string, writer io.Writer) (stream io.Reader, contenttype string, err error)
 	SaveFile(file io.Reader, filename string, path string) (ok bool)
 	ObjectInfo(path string) (exists bool, isDir bool, location string)
 	CreateDirectory(path string) (ok bool)
@@ -64,7 +64,7 @@ func (f FileProvider) FilePath(path string) string {
 }
 
 // RemoteFile will bypass http.ServeContent() and instead write directly to the response.
-func (f FileProvider) RemoteFile(path string, writer io.Writer) {
+func (f FileProvider) SendFile(path string, writer io.Writer) (stream io.Reader, contenttype string, err error) {
 	return
 }
 
