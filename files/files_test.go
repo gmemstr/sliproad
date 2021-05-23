@@ -24,10 +24,6 @@ func TestFileProvider(t *testing.T) {
 		t.Errorf("Default FileProvider GetDirectory() files returned %v, expected none.", getdirectory.Files)
 	}
 
-	filepath := fp.FilePath(""); if filepath != "" {
-		t.Errorf("Default FileProvider FilePath() %v, expected nothing.", filepath)
-	}
-
 	savefile := fp.SaveFile(nil, "", ""); if savefile != false {
 		t.Errorf("Default FileProvider SaveFile() attempted to save a file.")
 	}
@@ -85,10 +81,6 @@ func TestDiskProvider(t *testing.T) {
 
 	getdirectory := dp.GetDirectory(""); if len(getdirectory.Files) != 1 {
 		t.Errorf("DiskProvider GetDirectory() files returned %v, expected 1.", getdirectory.Files)
-	}
-
-	filepath := dp.FilePath("testing.txt"); if filepath !=  DISK_TESTING_GROUNDS + "/testing.txt"{
-		t.Errorf("DiskProvider FilePath() returned %v, expected path.", filepath)
 	}
 
  	testfile := bytes.NewReader([]byte("second test file!"))
