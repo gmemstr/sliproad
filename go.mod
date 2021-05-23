@@ -1,6 +1,6 @@
 module github.com/gmemstr/nas
 
-go 1.13
+go 1.16
 
 require (
 	github.com/Nerzal/gocloak/v5 v5.1.0

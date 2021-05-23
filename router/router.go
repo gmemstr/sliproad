@@ -1,12 +1,9 @@
 package router
 
 import (
-	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
+	"io/fs"
 
 	"github.com/gorilla/mux"
 )
@@ -37,20 +34,9 @@ func handle(handlers ...handler) http.Handler {
 }
 
 // Init initializes the main router and all routes for the application.
-func Init() *mux.Router {
+func Init(sc fs.FS) *mux.Router {
 
 	r := mux.NewRouter()
-
-	// "Static" paths
-	r.PathPrefix("/javascript/").Handler(http.StripPrefix("/javascript/", http.FileServer(http.Dir("assets/web/javascript"))))
-	r.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("assets/web/css"))))
-	r.PathPrefix("/icons/").Handler(http.StripPrefix("/icons/", http.FileServer(http.Dir("assets/web/icons"))))
-
-	// Paths that require specific handlers
-	r.Handle("/", handle(
-		requiresAuth(),
-		rootHandler(),
-	)).Methods("GET")
 
 	// File & Provider API
 	r.Handle("/api/providers", handle(
@@ -61,7 +47,7 @@ func Init() *mux.Router {
 	r.Handle(`/api/files/{provider:[a-zA-Z0-9]+\/*}`, handle(
 		requiresAuth(),
 		handleProvider(),
-	)).Methods("GET", "POST")
+	)).Methods("GET", "POST", "DELETE")
 
 	r.Handle(`/api/files/{provider:[a-zA-Z0-9]+}/{file:.+}`, handle(
 		requiresAuth(),
@@ -73,38 +59,7 @@ func Init() *mux.Router {
 		callbackAuth(),
 	)).Methods("GET", "POST")
 
+	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.FS(sc))))
+
 	return r
-}
-
-// Handles serving index page.
-func rootHandler() handler {
-	return func(context *requestContext, w http.ResponseWriter, r *http.Request) *httpError {
-		f, err := os.Open("assets/web/index.html")
-		if err != nil {
-			return &httpError{
-				Message:    fmt.Sprintf("error serving index page from assets/web"),
-				StatusCode: http.StatusInternalServerError,
-			}
-		}
-
-		defer f.Close()
-		stats, err := f.Stat()
-		if err != nil {
-			return &httpError{
-				Message:    fmt.Sprintf("error serving index page from assets/web"),
-				StatusCode: http.StatusInternalServerError,
-			}
-		} else {
-			w.Header().Add("Content-Length", strconv.FormatInt(stats.Size(), 10))
-		}
-
-		_, err = io.Copy(w, f)
-		if err != nil {
-			return &httpError{
-				Message:    fmt.Sprintf("error serving index page from assets/web"),
-				StatusCode: http.StatusInternalServerError,
-			}
-		}
-		return nil
-	}
 }
