@@ -12,7 +12,6 @@ Yellow #F2E307
     --dark-blue: #081226;
     --yellow: #F2E307;
     --pink: #F06DF2;
-    --desktop-width: 1170px;
 }
 
 body, h1 a {
@@ -45,7 +44,7 @@ h1 a {
     font-weight: bold;
     text-decoration: none;
     transition: background-color 0.5s;
-    background-color: var(--blue);
+    background-color: var(--dark-blue);
 }
 
 .list {

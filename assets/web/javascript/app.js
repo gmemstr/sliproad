@@ -44,8 +44,8 @@ function getFileListing(provider, path = "") {
 
       <div class="files list">
         ${onlyfiles.map(file =>
-          `<div class="item"><a class="file" href="/api/files/${provider}${path}/${file.Name}">
-            <span><img src="/icons/file.svg"/>${file.Name}</span>
+          `<div class="item"><a class="file" href="/api/files/${provider}${path}/${file.Name}" target="__blank">
+            <span>${file.Name}</span>
           </a><button onclick="deleteFile('${provider}', '${path === "" ? '' : path}', '${file.Name}')"><img src="/icons/trash.svg"/></button></div>
           `
         ).join('')}
