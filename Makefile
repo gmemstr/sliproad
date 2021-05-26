@@ -27,9 +27,8 @@ test:
 	go test ./... -cover
 
 dist: clean make_build_dir small small_pi
-	cp -r assets/* build/assets
-	tar -czf build/tars/sliproad-$(SLIPROAD_VERSION)-arm.tar.gz build/assets build/bin/sliproad-arm README.md LICENSE
-	tar -czf build/tars/sliproad-$(SLIPROAD_VERSION)-x86.tar.gz build/assets build/bin/sliproad README.md LICENSE
+	tar -czf build/tars/sliproad-$(SLIPROAD_VERSION)-arm.tar.gz build/bin/sliproad-arm README.md LICENSE
+	tar -czf build/tars/sliproad-$(SLIPROAD_VERSION)-x86.tar.gz build/bin/sliproad README.md LICENSE
 
 clean:
 	rm -rf build

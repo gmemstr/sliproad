@@ -19,6 +19,9 @@ function getFileListing(provider, path = "") {
       if (!files) {
         files = []
       }
+      onlyfiles = files.filter(file => !file.IsDirectory)
+      onlydirs = files.filter(file => file.IsDirectory)
+
       html`
       <div class="forms">
       <form id="uploadfile" action="#" method="post">
@@ -30,10 +33,19 @@ function getFileListing(provider, path = "") {
         <input type="submit" value="Create Directory" id="newdir_submit">
       </form>
       </div>
-      <div class="list">
-        ${files.map(file =>
-          `<div class="item"><a class="${file.IsDirectory ? "directory" : "file"}" href="${!file.IsDirectory ? `/api/files/${provider}${path}/${file.Name}` : `#${provider}${path === "" ? "" : path}/${file.Name}`}">
-            <span>${file.IsDirectory ? '<img src="/icons/folder.svg"/>' : '<img src="/icons/file.svg"/>'}${file.Name}</span>
+      <div class="directories list">
+        ${onlydirs.map(directory =>
+          `<div class="item"><a class="directory" href="#${provider}${path === "" ? "" : path}/${directory.Name}">
+            <span>${directory.Name}/</span>
+          </a><button onclick="deleteFile('${provider}', '${path === "" ? '' : path}', '${directory.Name}')"><img src="/icons/trash.svg"/></button></div>
+          `
+        ).join('')}
+      </div>
+
+      <div class="files list">
+        ${onlyfiles.map(file =>
+          `<div class="item"><a class="file" href="/api/files/${provider}${path}/${file.Name}" target="__blank">
+            <span>${file.Name}</span>
           </a><button onclick="deleteFile('${provider}', '${path === "" ? '' : path}', '${file.Name}')"><img src="/icons/trash.svg"/></button></div>
           `
         ).join('')}

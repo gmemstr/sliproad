@@ -58,6 +58,10 @@ func (dp *DiskProvider) SendFile(path string, writer io.Writer) (stream io.Reade
 		var buf [512]byte
 		n, _ := io.ReadFull(f, buf[:])
 		contenttype = http.DetectContentType(buf[:n])
+		_, err := f.Seek(0, io.SeekStart)
+		if err != nil {
+			return stream, contenttype, err
+		}
 	}
 
 	return f, contenttype, nil
