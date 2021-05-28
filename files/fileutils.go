@@ -17,6 +17,13 @@ func TranslateProvider(codename string, i *FileProviderInterface) {
 		*i = bbProv
 		return
 	}
+
+	if provider.Provider == "s3" {
+		s3Prov := &S3Provider{provider, provider.Config["region"], provider.Config["bucket"]}
+		*i = s3Prov
+		return
+	}
+
 	*i = FileProvider{}
 }
 
