@@ -5,9 +5,9 @@ Merging filesystems together
 ## About
 
 This project aims to be an easy-to-use web API and frontend that allows the
-management of cloud storage, whether it be on the host machine or part of a
-remote API, alongside local filesystems. While this is intended mostly for my 
-own use, I am documenting it in a way that I hope allows others to use it!
+management of cloud storage alongside local filesystems. While this is intended 
+mostly for my own use, I am documenting it in a way that I hope allows others 
+to use it!
 
 ## Configuration
 
