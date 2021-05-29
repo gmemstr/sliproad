@@ -140,7 +140,7 @@ func (bp *BackblazeProvider) GetDirectory(path string) Directory {
 	return finalDir
 }
 
-func (bp *BackblazeProvider) SendFile(path string, w io.Writer) (stream io.Reader, contenttype string, err error) {
+func (bp *BackblazeProvider) SendFile(path string) (stream io.Reader, contenttype string, err error) {
 	client := &http.Client{}
 	// Get bucket name >:(
 	bucketIdPayload := fmt.Sprintf(`{"accountId": "%s", "bucketId": "%s"}`, bp.Name, bp.Bucket)

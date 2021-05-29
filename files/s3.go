@@ -3,6 +3,10 @@ package files
 import (
 	"fmt"
 	"io"
+	"mime"
+	"path/filepath"
+	"net/http"
+
 	// I _really_ don't want to deal with AWS API stuff by hand.
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -10,6 +14,7 @@ import (
 )
 
 var svc s3.S3
+var sess *session.Session
 
 type S3Provider struct {
 	FileProvider
@@ -40,6 +45,15 @@ func (s *S3Provider) GetDirectory(path string) Directory {
 
 	dir := Directory{}
 	for _, item := range resp.Contents {
+		ik := *item.Key
+		// Why is this here? AWS returns a complete list of files, including
+		// files within subdirectories (prefixed with the dir name). So we can
+		// ignore directories altogether -- I would prefer to display them but
+		// not sure what the best method of distinguishing them in ObjectInfo()
+		// would be.
+		if ik[len(ik)-1:] == "/" {
+			continue
+		}
 		file := FileInfo{
 			IsDirectory: false,
 			Name: *item.Key,
@@ -51,8 +65,23 @@ func (s *S3Provider) GetDirectory(path string) Directory {
 }
 
 // RemoteFile will bypass http.ServeContent() and instead write directly to the response.
-func (s *S3Provider) SendFile(path string, writer io.Writer) (stream io.Reader, contenttype string, err error) {
-	return
+func (s *S3Provider) SendFile(path string) (stream io.Reader, contenttype string, err error) {
+	req, err := svc.GetObject(&s3.GetObjectInput{
+		Bucket: &s.Bucket,
+		Key: &path,
+	})
+	if err != nil {
+		return stream, contenttype, err
+	}
+
+	contenttype = mime.TypeByExtension(filepath.Ext(path))
+	if contenttype == "" {
+		var buf [512]byte
+		n, _ := io.ReadFull(req.Body, buf[:])
+		contenttype = http.DetectContentType(buf[:n])
+	}
+
+	return req.Body, contenttype, err
 }
 
 // SaveFile will save a file with the contents of the io.Reader at the path specified.
@@ -64,7 +93,20 @@ func (s *S3Provider) SaveFile(file io.Reader, filename string, path string) bool
 // Should return whether the path exists, if the path is a directory, and if it lives on disk.
 // (see constants defined: `FILE_IS_REMOTE` and `FILE_IS_LOCAL`)
 func (s *S3Provider) ObjectInfo(path string) (bool, bool, string) {
-	return true, true, ""
+	if path == "" {
+		return true, true, ""
+	}
+
+	_, err := svc.GetObject(&s3.GetObjectInput{
+		Bucket: &s.Bucket,
+		Key: &path,
+	})
+	if err != nil {
+		fmt.Println(err)
+		return false, false, ""
+	}
+
+	return true, false, ""
 }
 
 // CreateDirectory will create a directory on services that support it.

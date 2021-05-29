@@ -45,7 +45,7 @@ func (dp *DiskProvider) GetDirectory(path string) Directory {
 	}
 }
 
-func (dp *DiskProvider) SendFile(path string, writer io.Writer) (stream io.Reader, contenttype string, err error) {
+func (dp *DiskProvider) SendFile(path string) (stream io.Reader, contenttype string, err error) {
 	rp := strings.Join([]string{dp.Location,path}, "/")
 	f, err := os.Open(rp)
 	if err != nil {

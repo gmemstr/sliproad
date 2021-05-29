@@ -38,7 +38,7 @@ type FileInfo struct {
 type FileProviderInterface interface {
 	Setup(args map[string]string) (ok bool)
 	GetDirectory(path string) (directory Directory)
-	SendFile(path string, writer io.Writer) (stream io.Reader, contenttype string, err error)
+	SendFile(path string) (stream io.Reader, contenttype string, err error)
 	SaveFile(file io.Reader, filename string, path string) (ok bool)
 	ObjectInfo(path string) (exists bool, isDir bool, location string)
 	CreateDirectory(path string) (ok bool)
@@ -58,7 +58,7 @@ func (f FileProvider) GetDirectory(path string) Directory {
 }
 
 // RemoteFile will bypass http.ServeContent() and instead write directly to the response.
-func (f FileProvider) SendFile(path string, writer io.Writer) (stream io.Reader, contenttype string, err error) {
+func (f FileProvider) SendFile(path string) (stream io.Reader, contenttype string, err error) {
 	return
 }
 

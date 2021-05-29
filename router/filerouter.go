@@ -50,7 +50,7 @@ func handleProvider() handler {
 				w.Write(data)
 				return nil
 			} else {
-				stream, contenttype, err := provider.SendFile(filename, w)
+				stream, contenttype, err := provider.SendFile(filename)
 
 				if err != nil {
 					return &httpError{
