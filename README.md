@@ -1,21 +1,24 @@
-# sliproad
-merging filesystems together
+# Sliproad
 
-## about
+Merging filesystems together
 
-this project aims to be an easy-to-user web API that allows the management of cloud storage, whether it be on
-the host machine or part of a remote api. this is intended mostly for my own use, but i am documenting it in a way that
-i hope allows others to pick it up and improve on it down the line.
+## About
 
-if something is unclear, feel free to open an issue :)
+This project aims to be an easy-to-use web API and frontend that allows the
+management of cloud storage alongside local filesystems. While this is intended 
+mostly for my own use, I am documenting it in a way that I hope allows others 
+to use it!
 
-## configuration
+## Configuration
 
-unlike the initial version of this project, the current build uses _providers_ to determine how to handle various 
-functions related to files. currently, two are implemented, `disk` and `backblaze`, since they are the primary providers
-i use myself. the providers you would like to use can be added to `providers.yml` alongside the binary.
+Sliproad uses "Providers" to support various filesystems "types", whether it be
+remote or local. Currently, three exist - `disk` for filesystems local to the
+machine, `backblaze` to leverage Backblaze B2 file storage and `s3` for AWS S3
+(and other compatible providers).
 
-for example, here is a sample configuration implementing both of them:
+An example of leveraging all three, in various forms, can be found below. As 
+more are added, this example will be updated, and more examples can be found in
+the `assets/config_examples` directory.
 
 ```yaml
 disk:
@@ -24,53 +27,82 @@ disk:
 backblaze:
   provider: backblaze
   config:
-    appKeyId: APP_KEY_ID
-    appId: APP_ID
-    bucket: BUCKET_ID
+    bucket: some-bucket
+    applicationKeyId: application-key-id
+    applicationKey: application-key
+s3:
+  provider: s3
+  config:
+    region: eu-west-2
+    bucket: some-bucket
+# An example of an S3 compatible API, doesn't have to be Backblaze.
+backblazes3:
+  provider: s3
+  config:
+    bucket: some-bucket
+    region: us-west-000
+    endpoint: s3.us-west-000.backblazeb2.com
+    keyid: key-id
+    keysecret: key-secret
 ```
 
-(read more here: [#providers](#providers))
+## Running
 
-## running
+After configuring the providers you would like to utilize, simply run 
+`./sliproad`. This will spin up the webserver at `127.0.0.1:3000`, listening on
+all addresses.
 
-after adding the providers you would like to use, the application can be run simply with `./nas`. it will attach to port
-`:3000`.
+## Frontend
 
-## building
+The frontend is a very lightweight JavaScript application and aims to be very
+functional, if a bit rough around the edges.
 
-this project uses go modules and a makefile, so building should be relatively straightforward. 
+![Screenshot_2021-05-29 Sliproad](https://user-images.githubusercontent.com/1878840/120085420-d63cbc80-c0cf-11eb-9fbb-b0b05a3f5d58.png)
+
+It should scale reasonably well for smaller devices. Because it's now bundled
+into the binary (as opposed to distributed alongside), it's no longer possible
+to swap it out for a custom frontend without serving the frontend seperately.
+
+## API
+
+This project is largely API-first, and documentation can be found here:
+
+https://github.com/gmemstr/sliproad/wiki/API
+
+## Building
+
+This project leverages a Makefile to macro common commands for running, testing
+and building this project.
 
  - `make` will build the project for your system's architecture.
  - `make run` will run the project with `go run`
- - `make pi` will build the project with the `GOOS=linux GOARCH=arm GOARM=5 go` flags set for raspberry pis.
- 
-## providers
+ - `make pi` will build the project with the `GOOS=linux GOARCH=arm GOARM=5 go` flags set for Raspberry Pi.
+ - `make dist` will build and package the binaries for distribution.
 
-"providers" provide a handful of functions to interact nicely with a filesystem, whether it be on local disk or on a 
-remote server via an api. best-effort is done to keep these performant, up to date and minimal.
+### Adding Providers
 
-there are a few built-in providers, and more can be added by opening a pull request.
+New file providers can be implemented by building off the 
+`FileProviderInterface` struct, as the existing providers demonstrate. You can
+then instruct the [`TranslateProvider()`](https://github.com/gmemstr/sliproad/blob/master/files/fileutils.go#L8-L21) function
+that it exists and how to configure it.
 
-|name|service|configuration example|
-|----|-------|---------------------|
-|disk|local filesystem|assets/config_examples/disk.yml|
-|backblaze|backblaze b2|assets/config_examples/backblaze.yml|
+## Authentication [!]
 
-you can find a full configuration file under `assets/config_examples/providers.yml`
+Authentication is a bit tricky and due to be reworked in the next iteration of
+this project. Currently, support for [Keycloak](https://www.keycloak.org/) is
+implemented, if a bit naively. You can turn this authentication requirement on
+by adding `auth.yml` alongside your `providers.yml` file with the following:
 
-### custom provider
+```yaml
+provider_url: "https://url-of-keycloak"
+realm: "keycloak-realm"
+redirect_base_url: "https://location-of-sliproad"
+```
 
-custom file providers can be implemented by adding a new go file to the `files` module. it should
-implement the `FileProviderInterface` interface.
+Keycloak support is not currently actively supported, and is due to be removed 
+in the next major release of Sliproad. That said, if you encounter any major 
+bugs utilizing it before this, _please_ open an issue so I can dig in further.
 
-## authentication
-
-basic authentication support utilizing [keycloak](https://keycloak.org/) has been implemented, but work
-is being done to bring this more inline with the storage provider implementation. see `assets/config_examples/auth.yml`
-for an example configuration - having this file alongside the binary will activate authentication on all
-`/api/files` endpoints. note that this implementation is a work in progress, and a seperate branch will
-contain further improvements.
-
-## icons
+## Credits
 
 SVG Icons provided by Paweł Kuna: https://github.com/tabler/tabler-icons (see assets/web/icons/README.md)

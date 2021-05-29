@@ -18,3 +18,16 @@ backblaze:
     applicationKeyId: aaaaaaaaaaaa
     applicationKey: aaaaaaaaaaaa
     bucket: aaaaaaaaaaaa
+s3:
+  provider: s3
+  config:
+    region: eu-west-2
+    bucket: some-bucket
+backblazes3:
+  provider: s3
+  config:
+    bucket: sliproad-testing
+    region: us-west-000
+    endpoint: s3.us-west-000.backblazeb2.com
+    keyid: key-id
+    keysecret: key-secret
