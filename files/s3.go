@@ -12,10 +12,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
 var svc s3.S3
-var sess *session.Session
+var sess session.Session
 
 type S3Provider struct {
 	FileProvider
@@ -38,11 +39,12 @@ func (s *S3Provider) Setup(args map[string]string) bool {
 	if s.Endpoint != "" {
 		config.Endpoint = &s.Endpoint
 	}
-	sess, err := session.NewSession(config)
+	ss, err := session.NewSession(config)
+	sess = *ss
 	if err != nil {
 		return false
 	}
-	svc = *s3.New(sess)
+	svc = *s3.New(&sess)
 	return true
 }
 
@@ -95,7 +97,17 @@ func (s *S3Provider) SendFile(path string) (stream io.Reader, contenttype string
 }
 
 func (s *S3Provider) SaveFile(file io.Reader, filename string, path string) bool {
-	return false
+	uploader := s3manager.NewUploader(&sess)
+	_, err := uploader.Upload(&s3manager.UploadInput{
+	    Bucket: &s.Bucket,
+	    Key: &filename,
+	    Body: file,
+	})
+	if err != nil {
+		return false
+	}
+
+	return true
 }
 
 func (s *S3Provider) ObjectInfo(path string) (bool, bool, string) {
