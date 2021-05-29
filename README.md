@@ -52,6 +52,12 @@ After configuring the providers you would like to utilize, simply run
 `./sliproad`. This will spin up the webserver at `127.0.0.1:3000`, listening on
 all addresses.
 
+## API
+
+This project is largely API-first, and documentation can be found here:
+
+https://github.com/gmemstr/sliproad/wiki/API
+
 ## Building
 
 This project leverages a Makefile to macro common commands for running, testing
