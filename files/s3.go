@@ -15,9 +15,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
-var svc s3.S3
-var sess session.Session
-
 type S3Provider struct {
 	FileProvider
 	Region    string
@@ -25,6 +22,9 @@ type S3Provider struct {
 	Endpoint  string
 	KeyID     string
 	KeySecret string
+
+	svc s3.S3
+	sess session.Session
 }
 
 // Setup runs when the application starts up, and allows for things like authentication.
@@ -40,17 +40,17 @@ func (s *S3Provider) Setup(args map[string]string) bool {
 		config.Endpoint = &s.Endpoint
 	}
 	ss, err := session.NewSession(config)
-	sess = *ss
+	s.sess = *ss
 	if err != nil {
 		return false
 	}
-	svc = *s3.New(&sess)
+	s.svc = *s3.New(&s.sess)
 	return true
 }
 
 // GetDirectory fetches a directory's contents.
 func (s *S3Provider) GetDirectory(path string) Directory {
-	resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(s.Bucket)})
+	resp, err := s.svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(s.Bucket)})
 	if err != nil {
 		fmt.Println(err)
 		return Directory{}
@@ -78,7 +78,7 @@ func (s *S3Provider) GetDirectory(path string) Directory {
 }
 
 func (s *S3Provider) SendFile(path string) (stream io.Reader, contenttype string, err error) {
-	req, err := svc.GetObject(&s3.GetObjectInput{
+	req, err := s.svc.GetObject(&s3.GetObjectInput{
 		Bucket: &s.Bucket,
 		Key:    &path,
 	})
@@ -97,7 +97,7 @@ func (s *S3Provider) SendFile(path string) (stream io.Reader, contenttype string
 }
 
 func (s *S3Provider) SaveFile(file io.Reader, filename string, path string) bool {
-	uploader := s3manager.NewUploader(&sess)
+	uploader := s3manager.NewUploader(&s.sess)
 	_, err := uploader.Upload(&s3manager.UploadInput{
 		Bucket: &s.Bucket,
 		Key: &filename,
@@ -115,7 +115,7 @@ func (s *S3Provider) ObjectInfo(path string) (bool, bool, string) {
 		return true, true, ""
 	}
 
-	_, err := svc.GetObject(&s3.GetObjectInput{
+	_, err := s.svc.GetObject(&s3.GetObjectInput{
 		Bucket: &s.Bucket,
 		Key:    &path,
 	})
@@ -134,12 +134,12 @@ func (s *S3Provider) CreateDirectory(path string) bool {
 
 // Delete simply deletes a file. This is expected to be a destructive action by default.
 func (s *S3Provider) Delete(path string) bool {
-	_, err := svc.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(s.Bucket), Key: aws.String(path)})
+	_, err := s.svc.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(s.Bucket), Key: aws.String(path)})
 	if err != nil {
 		return false
 	}
 
-	err = svc.WaitUntilObjectNotExists(&s3.HeadObjectInput{
+	err = s.svc.WaitUntilObjectNotExists(&s3.HeadObjectInput{
 		Bucket: aws.String(s.Bucket),
 		Key:    aws.String(path),
 	})
