@@ -1,41 +1,40 @@
 version: 2.1
-orbs:
-  upx: circleci/upx@1.0.1
+
 jobs:
   build:
     docker:
-      - image: cimg/go:1.14
+      - image: cimg/go:1.16
     steps:
       - checkout
       - restore_cache:
           keys:
-            - go-mod-{{ checksum "go.sum" }}-v2
+            - go-mod-{{ checksum "go.sum" }}-v3
             - go-mod-{{ checksum "go.sum" }}
             - go-mod
-      - upx/install
       - run:
           command: make dist
       - store_artifacts:
           path: build
       - save_cache:
-          key: go-mod-{{ checksum "go.sum" }}-v2
+          key: go-mod-{{ checksum "go.sum" }}-v3
           paths:
             - /home/circleci/go/pkg/mod
   test:
     docker:
-      - image: cimg/go:1.14
+      - image: cimg/go:1.16
     steps:
       - checkout
       - restore_cache:
           keys:
-            - go-mod-{{ checksum "go.sum" }}-v2
+            - go-mod-{{ checksum "go.sum" }}-v3
             - go-mod-{{ checksum "go.sum" }}
             - go-mod
       - run:
           command: make test
 workflows:
-  version: 2
   build-and-test:
     jobs:
-      - build
       - test
+      - build:
+          requires:
+            - test

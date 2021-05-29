@@ -1,18 +1,31 @@
-:root {
-    /* https://coolors.co/fe4a49-fed766-009fb7-e6e6ea-f4f4f8 */
-    --orange: rgba(254, 74, 73, 1);
-    --yellow: rgba(254, 215, 102, 1);
-    --blue: rgba(0, 159, 183, 1);
-    --platinum: rgba(230, 230, 234, 1);
-    --white: rgba(244, 244, 248, 1);
+/*
+Pink #F06DF2
+Black #02060D
+Dark Blue #081226
+Blue #04ADBF
+Yellow #F2E307
+*/
 
-    --desktop-width: 1170px;
+:root {
+    --black: #02060D;
+    --blue: #04ADBF;
+    --dark-blue: #081226;
+    --yellow: #F2E307;
+    --pink: #F06DF2;
 }
 
 body, h1 a {
     font-family: sans-serif;
-    color: var(--orange);
-    background-color: var(--white);
+    color: var(--black);
+    background-color: var(--black);
+}
+
+.directory > span {
+    color: white;
+} 
+
+h1 a {
+    color: var(--pink);
 }
 
 .grid-lg {
@@ -31,7 +44,7 @@ body, h1 a {
     font-weight: bold;
     text-decoration: none;
     transition: background-color 0.5s;
-    background-color: var(--blue);
+    background-color: var(--dark-blue);
 }
 
 .list {
@@ -54,7 +67,7 @@ body, h1 a {
     position: relative;
     border-radius: 5px 0 0 5px;
     display: inline-block;
-    width: 93%;
+    width: 100%;
 }
 
 .list a img {
@@ -64,42 +77,34 @@ body, h1 a {
 }
 
 .list a.file {
-    background-color: var(--orange);
+    background-color: transparent;
+    border: 1px solid var(--blue);
+    color: white;
 }
 
 .list a.directory {
-    background-color: var(--blue);
+    background-color: var(--dark-blue);
 }
 
 .grid-lg a:visited, .grid-lg a,
 .list a:visited, .list a {
-    color: var(--white);
+    color: white;
 }
 .grid-lg a:hover,
 .list a.directory:hover {
-    color: var(--blue);
-    background-color: var(--platinum);
+    background-color: var(--blue);
     transition: background-color 0.5s, color 0.5s;
 }
 .list a.file:hover {
-    color: var(--orange);
-    background-color: var(--platinum);
+    background-color: var(--dark-blue);
     transition: background-color 0.5s, color 0.5s;
 }
 
-@media (prefers-color-scheme: dark) {
-    body, h1 a { background-color: black; }
-    .grid-lg a {
-        color: black;
-    }
-    .grid-lg a:visited, .grid-lg a {
-        color: black
-    }
-    .grid-lg a:hover {
-        color: lightgray;
-        background-color: darkgray;
-        transition: background-color 0.5s;
-    }
+.directories {
+    display: grid;
+    gap: 2px 2px;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: auto;
 }
 
 @media only screen and (max-width: 1170px) {
@@ -127,12 +132,13 @@ input[type="file"] {
 }
 
 input[type="file"]  + label, input[type="submit"], button {
-    color: var(--orange);
+    color: white;
+    background-color: transparent;
     padding: 10px;
     font-size: 1.25em;
     font-weight: 700;
     display: inline-block;
-    border: 2px solid var(--orange);
+    border: 2px solid var(--pink);
     border-radius: 5px;
     transition: background-color 0.5s, color 0.5s;
 }
@@ -142,33 +148,33 @@ input[type="text"] {
     font-size: 1.25em;
     font-weight: 500;
     display: inline-block;
-    border: 2px solid var(--orange);
+    border: 2px solid var(--pink);
     border-radius: 5px;
     transition: background-color 0.5s, color 0.5s;
     width: 50%;
+    background-color: transparent;
+    color: white;
 }
 
 input[type="file"]:focus + label,
 input[type="file"]  + label:hover,
 input[type="submit"]:hover,
 button:hover {
-    background-color: var(--orange);
-    color: var(--white);
+    color: white;
     transition: background-color 0.5s, color 0.5s;
 }
 
 progress {
-    background: var(--platinum);
-    border: 1px solid var(--orange);
+    border: 1px solid var(--pink);
 }
 progress::-webkit-progress-bar {
-    background: var(--orange);
+    background: var(--pink);
 }
 progress::-webkit-progress-value {
-    background: var(--orange);
+    background: var(--pink);
 }
 progress::-moz-progress-bar {
-    background: var(--orange);
+    background: var(--pink);
 }
 
 button {
@@ -184,10 +190,19 @@ button {
 }
 
 .directory ~ button {
-    border-color: var(--blue);
+    border-color: var(--dark-blue);
+    background-color: white;
 }
 .directory ~ button:hover {
-    background-color: var(--blue);
+    background-color: grey;
+}
+
+.file ~ button {
+    border-color: var(--blue);
+    background-color: white;
+}
+.file ~ button:hover {
+    background-color: grey;
 }
 
 .item, .forms {

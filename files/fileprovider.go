@@ -38,8 +38,7 @@ type FileInfo struct {
 type FileProviderInterface interface {
 	Setup(args map[string]string) (ok bool)
 	GetDirectory(path string) (directory Directory)
-	FilePath(path string) (realpath string)
-	RemoteFile(path string, writer io.Writer)
+	SendFile(path string) (stream io.Reader, contenttype string, err error)
 	SaveFile(file io.Reader, filename string, path string) (ok bool)
 	ObjectInfo(path string) (exists bool, isDir bool, location string)
 	CreateDirectory(path string) (ok bool)
@@ -58,13 +57,8 @@ func (f FileProvider) GetDirectory(path string) Directory {
 	return Directory{}
 }
 
-// FilePath returns the path to the file, whether it be a URL or local file path.
-func (f FileProvider) FilePath(path string) string {
-	return ""
-}
-
-// RemoteFile will bypass http.ServeContent() and instead write directly to the response.
-func (f FileProvider) RemoteFile(path string, writer io.Writer) {
+// SendFile returns a filestream, a valid MIME type for the file and an error.
+func (f FileProvider) SendFile(path string) (stream io.Reader, contenttype string, err error) {
 	return
 }
 

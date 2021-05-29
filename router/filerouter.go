@@ -3,14 +3,14 @@ package router
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gmemstr/nas/files"
-	"github.com/gorilla/mux"
+	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"sort"
 	"strings"
-	"time"
+
+	"github.com/gmemstr/nas/files"
+	"github.com/gorilla/mux"
 )
 
 func handleProvider() handler {
@@ -29,7 +29,7 @@ func handleProvider() handler {
 					StatusCode: http.StatusInternalServerError,
 				}
 			}
-			ok, isDir, location := provider.ObjectInfo(filename)
+			ok, isDir, _ := provider.ObjectInfo(filename)
 			if !ok {
 				return &httpError{
 					Message:    fmt.Sprintf("error locating file %s\n", filename),
@@ -49,27 +49,25 @@ func handleProvider() handler {
 				}
 				w.Write(data)
 				return nil
-			}
+			} else {
+				stream, contenttype, err := provider.SendFile(filename)
 
-			// If the file is local, attempt to use http.ServeContent for correct headers.
-			if location == files.FileIsLocal {
-				rp := provider.FilePath(filename)
-				if rp != "" {
-					f, err := os.Open(rp)
-					if err != nil {
-						return &httpError{
-							Message:    fmt.Sprintf("error opening file %s\n", rp),
-							StatusCode: http.StatusInternalServerError,
-						}
+				if err != nil {
+					return &httpError{
+						Message:    fmt.Sprintf("error finding file %s\n", vars["file"]),
+						StatusCode: http.StatusNotFound,
 					}
-					http.ServeContent(w, r, filename, time.Time{}, f)
+				}
+				w.Header().Set("Content-Type", contenttype)
+				_, err = io.Copy(w, stream)
+				if err != nil {
+					return &httpError{
+						Message:    fmt.Sprintf("unable to write %s\n", vars["file"]),
+						StatusCode: http.StatusBadGateway,
+					}
 				}
 			}
-			// If the file is remote, then delegate the writing to the response to the provider.
-			// This isn't a great workaround, but avoids caching the whole file in mem or on disk.
-			if location == files.FileIsRemote {
-				provider.RemoteFile(filename, w)
-			}
+
 			return nil
 		}
 
