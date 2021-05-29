@@ -99,9 +99,9 @@ func (s *S3Provider) SendFile(path string) (stream io.Reader, contenttype string
 func (s *S3Provider) SaveFile(file io.Reader, filename string, path string) bool {
 	uploader := s3manager.NewUploader(&sess)
 	_, err := uploader.Upload(&s3manager.UploadInput{
-	    Bucket: &s.Bucket,
-	    Key: &filename,
-	    Body: file,
+		Bucket: &s.Bucket,
+		Key: &filename,
+		Body: file,
 	})
 	if err != nil {
 		return false
@@ -134,5 +134,18 @@ func (s *S3Provider) CreateDirectory(path string) bool {
 
 // Delete simply deletes a file. This is expected to be a destructive action by default.
 func (s *S3Provider) Delete(path string) bool {
-	return false
+	_, err := svc.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(s.Bucket), Key: aws.String(path)})
+	if err != nil {
+		return false
+	}
+
+	err = svc.WaitUntilObjectNotExists(&s3.HeadObjectInput{
+		Bucket: aws.String(s.Bucket),
+		Key:    aws.String(path),
+	})
+	if err != nil {
+		return false
+	}
+
+	return true
 }
