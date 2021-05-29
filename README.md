@@ -83,7 +83,7 @@ and building this project.
 
 New file providers can be implemented by building off the 
 `FileProviderInterface` struct, as the existing providers demonstrate. You can
-then instruct the [`TranslateProvider()`](https://github.com/gmemstr/sliproad/blob/master/files/fileutils.go#L8-L21)
+then instruct the [`TranslateProvider()`](https://github.com/gmemstr/sliproad/blob/master/files/fileutils.go#L8-L21) function
 that it exists and how to configure it.
 
 ## Authentication [!]
