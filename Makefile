@@ -14,11 +14,9 @@ pi: make_build_dir
 
 small: make_build_dir
 	go build -o build/bin/sliproad -ldflags="-s -w"
-	upx --brute build/bin/sliproad -9 --no-progress
 
 small_pi: make_build_dir
 	env GOOS=linux GOARCH=arm GOARM=5 go build -o build/bin/sliproad-arm -ldflags="-s -w"
-	upx --brute build/bin/sliproad-arm -9 --no-progress
 
 run:
 	go run webserver.go
