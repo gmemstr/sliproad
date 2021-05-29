@@ -57,7 +57,7 @@ func (f FileProvider) GetDirectory(path string) Directory {
 	return Directory{}
 }
 
-// RemoteFile will bypass http.ServeContent() and instead write directly to the response.
+// SendFile returns a filestream, a valid MIME type for the file and an error.
 func (f FileProvider) SendFile(path string) (stream io.Reader, contenttype string, err error) {
 	return
 }

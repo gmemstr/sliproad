@@ -19,7 +19,24 @@ func TranslateProvider(codename string, i *FileProviderInterface) {
 	}
 
 	if provider.Provider == "s3" {
-		s3Prov := &S3Provider{provider, provider.Config["region"], provider.Config["bucket"]}
+		s3Prov := &S3Provider{
+			FileProvider: provider,
+			Region:       provider.Config["region"],
+			Bucket:       provider.Config["bucket"],
+			Endpoint:     "",
+			KeyID:        "",
+			KeySecret:    "",
+		}
+		if _, ok := provider.Config["endpoint"]; ok {
+			s3Prov.Endpoint = provider.Config["endpoint"]
+		}
+		if _, ok := provider.Config["keyid"]; ok {
+			s3Prov.KeyID = provider.Config["keyid"]
+		}
+		if _, ok := provider.Config["keysecret"]; ok {
+			s3Prov.KeySecret = provider.Config["keysecret"]
+		}
+
 		*i = s3Prov
 		return
 	}

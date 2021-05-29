@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"io"
 	"mime"
-	"path/filepath"
 	"net/http"
+	"path/filepath"
 
 	// I _really_ don't want to deal with AWS API stuff by hand.
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
@@ -18,16 +19,26 @@ var sess *session.Session
 
 type S3Provider struct {
 	FileProvider
-	Region string
-	Bucket string
+	Region    string
+	Bucket    string
+	Endpoint  string
+	KeyID     string
+	KeySecret string
 }
-
 
 // Setup runs when the application starts up, and allows for things like authentication.
 func (s *S3Provider) Setup(args map[string]string) bool {
-	sess, err := session.NewSession(&aws.Config{
-    	Region: aws.String(s.Region)},
-	)
+	config := &aws.Config{Region: aws.String(s.Region)}
+	if s.KeyID != "" && s.KeySecret != "" {
+		config = &aws.Config{
+			Region:      aws.String(s.Region),
+			Credentials: credentials.NewStaticCredentials(s.KeyID, s.KeySecret, ""),
+		}
+	}
+	if s.Endpoint != "" {
+		config.Endpoint = &s.Endpoint
+	}
+	sess, err := session.NewSession(config)
 	if err != nil {
 		return false
 	}
@@ -40,7 +51,7 @@ func (s *S3Provider) GetDirectory(path string) Directory {
 	resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(s.Bucket)})
 	if err != nil {
 		fmt.Println(err)
-	    return Directory{}
+		return Directory{}
 	}
 
 	dir := Directory{}
@@ -56,7 +67,7 @@ func (s *S3Provider) GetDirectory(path string) Directory {
 		}
 		file := FileInfo{
 			IsDirectory: false,
-			Name: *item.Key,
+			Name:        *item.Key,
 		}
 		dir.Files = append(dir.Files, file)
 	}
@@ -64,11 +75,10 @@ func (s *S3Provider) GetDirectory(path string) Directory {
 	return dir
 }
 
-// RemoteFile will bypass http.ServeContent() and instead write directly to the response.
 func (s *S3Provider) SendFile(path string) (stream io.Reader, contenttype string, err error) {
 	req, err := svc.GetObject(&s3.GetObjectInput{
 		Bucket: &s.Bucket,
-		Key: &path,
+		Key:    &path,
 	})
 	if err != nil {
 		return stream, contenttype, err
@@ -84,14 +94,10 @@ func (s *S3Provider) SendFile(path string) (stream io.Reader, contenttype string
 	return req.Body, contenttype, err
 }
 
-// SaveFile will save a file with the contents of the io.Reader at the path specified.
 func (s *S3Provider) SaveFile(file io.Reader, filename string, path string) bool {
 	return false
 }
 
-// ObjectInfo will return the info for an object given a path to if the file exists and location.
-// Should return whether the path exists, if the path is a directory, and if it lives on disk.
-// (see constants defined: `FILE_IS_REMOTE` and `FILE_IS_LOCAL`)
 func (s *S3Provider) ObjectInfo(path string) (bool, bool, string) {
 	if path == "" {
 		return true, true, ""
@@ -99,7 +105,7 @@ func (s *S3Provider) ObjectInfo(path string) (bool, bool, string) {
 
 	_, err := svc.GetObject(&s3.GetObjectInput{
 		Bucket: &s.Bucket,
-		Key: &path,
+		Key:    &path,
 	})
 	if err != nil {
 		fmt.Println(err)
