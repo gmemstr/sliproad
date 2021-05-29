@@ -52,6 +52,17 @@ After configuring the providers you would like to utilize, simply run
 `./sliproad`. This will spin up the webserver at `127.0.0.1:3000`, listening on
 all addresses.
 
+## Frontend
+
+The frontend is a very lightweight JavaScript application and aims to be very
+functional, if a bit rough around the edges.
+
+![Screenshot_2021-05-29 Sliproad](https://user-images.githubusercontent.com/1878840/120085420-d63cbc80-c0cf-11eb-9fbb-b0b05a3f5d58.png)
+
+It should scale reasonably well for smaller devices. Because it's now bundled
+into the binary (as opposed to distributed alongside), it's no longer possible
+to swap it out for a custom frontend without serving the frontend seperately.
+
 ## API
 
 This project is largely API-first, and documentation can be found here:
